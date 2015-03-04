@@ -3,4 +3,4 @@
 ### Author ###
 
 Taras Lyuklyanchuk
-http://linkedin.com/in/TarasLyuklyanchuk/
+http://linkedin.com/in/TarasLyuklyanchuk
