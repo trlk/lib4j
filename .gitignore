@@ -86,3 +86,5 @@ bin/
 *.class
 GeneratedBarFiles/
 RemoteSystemsTempFiles/
+.mtj.tmp/
+hs_err_pid*
