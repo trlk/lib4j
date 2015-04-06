@@ -46,7 +46,7 @@ public class Xml {
 	// defaults, can be changed in runtime
 	public static int INDENT_LENGTH = 2;
 	public static boolean IS_PUT_EMPTY_NODES = Debug.isEnabled();
-	public static char TAG_DELIMITER = '.';
+	public static char ELEMENT_DELIMITER = '.';
 	public static char ATTR_DELIMITER = ':';
 	public static String ATTR_NAME_TYPE = "type";
 	public static String ATTR_NAME_INDEX = "index";
@@ -203,7 +203,7 @@ public class Xml {
 
 	public static String getNodePath(Node node) {
 
-		return getNodePath(node, TAG_DELIMITER);
+		return getNodePath(node, ELEMENT_DELIMITER);
 	}
 
 	public static String getNodeXPath(Node node) {
@@ -217,7 +217,7 @@ public class Xml {
 
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 
-			String path = getNodePath(node, TAG_DELIMITER);
+			String path = getNodePath(node, ELEMENT_DELIMITER);
 
 			if (path != null) {
 

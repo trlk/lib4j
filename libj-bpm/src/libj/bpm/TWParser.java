@@ -105,9 +105,9 @@ public class TWParser {
 				for (int i = 0; i < size; i++) {
 
 					Element item = twParse(list.getArrayData(i), node,
-							Xml.TAG_ITEM);
+ Xml.TAG_NAME_ITEM);
 
-					item.setAttribute(Xml.ATTR_INDEX, Integer.toString(i));
+					item.setAttribute(Xml.ATTR_NAME_INDEX, Integer.toString(i));
 				}
 
 			} else if (object instanceof TWObject) {
@@ -129,7 +129,7 @@ public class TWParser {
 
 			} else if (object instanceof GregorianCalendar) {
 
-				node.setAttribute(Xml.ATTR_TYPE,
+				node.setAttribute(Xml.ATTR_NAME_TYPE,
 						java.util.Date.class.getSimpleName());
 
 				java.util.Date dateObject = ((GregorianCalendar) object)
@@ -153,7 +153,7 @@ public class TWParser {
 
 			} else if (object instanceof Double) {
 
-				node.setAttribute(Xml.ATTR_TYPE, Double.class.getSimpleName());
+				node.setAttribute(Xml.ATTR_NAME_TYPE, Double.class.getSimpleName());
 
 				Double doubleObject = (Double) object;
 				node.setTextContent(fmtDouble(doubleObject));
@@ -164,7 +164,7 @@ public class TWParser {
 
 			} else if (object instanceof Integer) {
 
-				node.setAttribute(Xml.ATTR_TYPE, Integer.class.getSimpleName());
+				node.setAttribute(Xml.ATTR_NAME_TYPE, Integer.class.getSimpleName());
 
 				Integer integerObject = (Integer) object;
 				node.setTextContent(fmtInteger(integerObject));
@@ -178,7 +178,7 @@ public class TWParser {
 			} else {
 
 				node.setTextContent(object.toString());
-				node.setAttribute(Xml.ATTR_TYPE, nodeType);
+				node.setAttribute(Xml.ATTR_NAME_TYPE, nodeType);
 
 				if (Debug.isEnabled()) {
 

@@ -93,7 +93,7 @@ public class EngineJXLS {
 			Log.printMapList(items);
 
 			Map beans = new HashMap();
-			beans.put(Xml.TAG_ITEMS, items);
+			beans.put(Xml.TAG_NAME_ITEMS, items);
 
 			XLSTransformer transformer = new XLSTransformer();
 			transformer.transformWorkbook(doc, beans);

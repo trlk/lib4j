@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import libj.utils.Cal;
+
 /**
  * 
  * @author Adam Crume
@@ -65,8 +67,7 @@ public abstract class NamedStatement {
 	 *             if the statement could not be created
 	 */
 	@SuppressWarnings("rawtypes")
-	public NamedStatement(Connection connection, String query)
-			throws SQLException {
+	public NamedStatement(Connection connection, String query) throws SQLException {
 
 		this.query = query;
 		this.indexMap = new HashMap();
@@ -126,7 +127,7 @@ public abstract class NamedStatement {
 	}
 
 	/**
-	 * Sets a parameter.
+	 * Sets a parameter as Object.
 	 * 
 	 * @param name
 	 *            parameter name
@@ -140,10 +141,18 @@ public abstract class NamedStatement {
 	 */
 	public void setObject(String name, Object value) throws SQLException {
 
-		int[] indexes = getIndexes(name);
+		if (value instanceof java.util.Date) {
 
-		for (int i = 0; i < indexes.length; i++) {
-			statement.setObject(indexes[i], value);
+			setDate(name, (java.util.Date) value);
+
+		} else {
+
+			int[] indexes = getIndexes(name);
+
+			for (int i = 0; i < indexes.length; i++) {
+
+				statement.setObject(indexes[i], value);
+			}
 		}
 	}
 
@@ -290,6 +299,24 @@ public abstract class NamedStatement {
 	 *             if an error occurred
 	 * @throws IllegalArgumentException
 	 *             if the parameter does not exist
+	 * @see PreparedStatement#setDate(int, java.sql.Date)
+	 */
+	public void setDate(String name, java.util.Date value) throws SQLException {
+
+		setDate(name, Cal.getSqlDate(value));
+	}
+
+	/**
+	 * Sets a parameter.
+	 * 
+	 * @param name
+	 *            parameter name
+	 * @param value
+	 *            parameter value
+	 * @throws SQLException
+	 *             if an error occurred
+	 * @throws IllegalArgumentException
+	 *             if the parameter does not exist
 	 * @see PreparedStatement#setTimestamp(int, java.sql.Timestamp)
 	 */
 	public void setTimestamp(String name, Timestamp value) throws SQLException {
@@ -299,6 +326,24 @@ public abstract class NamedStatement {
 		for (int i = 0; i < indexes.length; i++) {
 			statement.setTimestamp(indexes[i], value);
 		}
+	}
+
+	/**
+	 * Sets a parameter as Object.
+	 * 
+	 * @param name
+	 *            parameter name
+	 * @param value
+	 *            parameter value
+	 * @throws SQLException
+	 *             if an error occurred
+	 * @throws IllegalArgumentException
+	 *             if the parameter does not exist
+	 * @see PreparedStatement#setObject(int, java.lang.Object)
+	 */
+	public void set(String name, Object value) throws SQLException {
+
+		setObject(name, value);
 	}
 
 	/**
@@ -343,11 +388,9 @@ public abstract class NamedStatement {
 					inSingleQuote = true;
 				} else if (c == '"') {
 					inDoubleQuote = true;
-				} else if (c == ':' && i + 1 < length
-						&& Character.isJavaIdentifierStart(query.charAt(i + 1))) {
+				} else if (c == ':' && i + 1 < length && Character.isJavaIdentifierStart(query.charAt(i + 1))) {
 					int j = i + 2;
-					while (j < length
-							&& Character.isJavaIdentifierPart(query.charAt(j))) {
+					while (j < length && Character.isJavaIdentifierPart(query.charAt(j))) {
 						j++;
 					}
 					String name = query.substring(i + 1, j);

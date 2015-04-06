@@ -16,7 +16,13 @@ public class CallableNamedStatement extends NamedStatement {
 		super(connection, query);
 
 		statement = connection.prepareCall(this.getParsedQuery());
+
 		this.setStatement(statement);
+	}
+
+	public Object get(String name) throws SQLException {
+
+		return getObject(name);
 	}
 
 	public Object getObject(String name) throws SQLException {
