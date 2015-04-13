@@ -56,8 +56,9 @@ public class Log {
 
 	public static void debug(String text) {
 
-		if (Debug.isEnabled())
+		if (Debug.isEnabled()) {
 			out.println(text);
+		}
 	}
 
 	public static void debug(String format, Object... args) {
@@ -86,6 +87,23 @@ public class Log {
 			Log.info("item[%d]:", i);
 			printMap(list.get(i));
 		}
+	}
+
+	public static void info(Throwable e) {
+
+		info(Error.getText(e));
+	}
+
+	public static void debug(Throwable e) {
+
+		if (Debug.isEnabled()) {
+			debug(Error.getText(e));
+		}
+	}
+
+	public static void error(Throwable e) {
+
+		error(Error.getText(e));
 	}
 
 }

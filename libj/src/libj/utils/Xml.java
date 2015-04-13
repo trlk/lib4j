@@ -52,6 +52,7 @@ public class Xml {
 	public static String ATTR_NAME_INDEX = "index";
 	public static String TAG_NAME_ITEM = "item";
 	public static String TAG_NAME_ITEMS = "items";
+	public static boolean THROW_NOT_FOUND = false;
 
 	public static Document parse(InputStream inputStream) {
 
@@ -463,7 +464,11 @@ public class Xml {
 
 		if (nodes.getLength() == 0) {
 
-			Raise.runtimeException("Not found");
+			if (THROW_NOT_FOUND) {
+				Raise.runtimeException("Node not found");
+			} else {
+				return null;
+			}
 
 		} else if (nodes.getLength() > 1) {
 
@@ -478,14 +483,19 @@ public class Xml {
 		return extractNode(doc.getDocumentElement(), xpath);
 	}
 
-	public static String getText(Node node, String xpath) {
+	public static String getText(Node node, String xpath, String defaultText) {
 
 		Node textNode = extractNode(node, xpath);
 
 		if (textNode != null)
 			return textNode.getTextContent();
 		else
-			return Text.EMPTY_STRING;
+			return defaultText;
+	}
+
+	public static String getText(Node node, String xpath) {
+
+		return getText(node, xpath, Text.EMPTY_STRING);
 	}
 
 	public static String getString(Node node, String xpath) {

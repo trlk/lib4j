@@ -3,11 +3,11 @@ package libj.xml;
 import java.util.HashMap;
 import java.util.List;
 
-public class Map {
+public class Xmap {
 
 	HashMap<String, Object> map;
 
-	public Map() {
+	public Xmap() {
 
 		map = new HashMap<String, Object>();
 	}
@@ -17,13 +17,13 @@ public class Map {
 		map.put(key, value);
 	}
 
-	public Map get(String key) {
+	public Xmap get(String key) {
 
-		return (Map) map.get(key);
+		return (Xmap) map.get(key);
 	}
 
 	@SuppressWarnings("all")
-	public List<Map> getList(String key) {
+	public List<Xmap> getList(String key) {
 
 		return (List) map.get(key);
 	}

@@ -18,6 +18,17 @@ public class Text {
 	public static final String EMPTY_STRING = new String();
 	public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
+	public static String nvl(String s0, String s1) {
+
+		if (s0 != null && !s0.isEmpty()) {
+			return s0;
+		} else if (s1 != null) {
+			return s1;
+		} else {
+			return EMPTY_STRING;
+		}
+	}
+
 	public static String printf(String format, Object... args) {
 
 		return String.format(format, args);
@@ -44,9 +55,11 @@ public class Text {
 		String[] w = text.split("-"); // split on "-"
 
 		ArrayList<String> words = new ArrayList<String>();
-		for (int i = 0; i < w.length; i++)
+
+		for (int i = 0; i < w.length; i++) {
 			if (w[i].length() != 0)
 				words.add(w[i]);
+		}
 
 		StringBuilder sb = new StringBuilder(words.size());
 
@@ -226,8 +239,7 @@ public class Text {
 	 * @param newString
 	 *            new token to replace.
 	 */
-	public static final String replaceAll(String line, String oldString,
-			String newString) {
+	public static final String replaceAll(String line, String oldString, String newString) {
 		int i = 0;
 		if ((i = line.indexOf(oldString, i)) >= 0) {
 			char line2[] = line.toCharArray();

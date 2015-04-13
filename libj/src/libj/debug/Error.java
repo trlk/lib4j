@@ -1,22 +1,23 @@
-package libj.error;
+package libj.debug;
 
 import java.io.PrintStream;
 
-@Deprecated
+import libj.utils.Text;
+
 public class Error {
 
 	public static String getText(Throwable e) {
 
-		return libj.debug.Error.getText(e);
+		return Text.sprintf("%s\n%s", e.getMessage(), e.getStackTrace());
 	}
 
 	public static void print(Throwable e, PrintStream stream) {
 
-		libj.debug.Error.print(e, stream);
+		stream.println(getText(e));
 	}
 
 	public static void print(Throwable e) {
 
-		libj.debug.Error.print(e);
+		print(e, System.err);
 	}
 }

@@ -1,5 +1,6 @@
 package libj.error;
 
+import libj.debug.Error;
 import libj.utils.Text;
 
 public class Raise {

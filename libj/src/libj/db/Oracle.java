@@ -15,8 +15,8 @@ import java.sql.Statement;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import libj.debug.Error;
 import libj.debug.Log;
-import libj.error.Error;
 import libj.error.Raise;
 import libj.jdbc.NamedStatement;
 import libj.utils.Text;
