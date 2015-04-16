@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -378,6 +379,36 @@ public class Cal {
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 
 		return cal.getTime();
+	}
+
+	public static TimeZone getTimeZone() {
+
+		return TimeZone.getDefault();
+	}
+
+	public static TimeZone getTimeZone(String tzID) {
+
+		return TimeZone.getTimeZone(tzID);
+	}
+
+	public static int getTimeZoneOffset(Date d) {
+
+		return getTimeZone().getOffset(d.getTime());
+	}
+
+	public static int getTimeZoneOffset() {
+
+		return getTimeZoneOffset(now());
+	}
+
+	public static Date utcToLocal(Date d) {
+
+		return new Date(d.getTime() + getTimeZoneOffset(d));
+	}
+
+	public static Date localToUTC(Date d) {
+
+		return new Date(d.getTime() - getTimeZoneOffset(d));
 	}
 
 }

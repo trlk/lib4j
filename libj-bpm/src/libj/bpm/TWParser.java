@@ -14,7 +14,7 @@ import libj.debug.Debug;
 import libj.debug.Log;
 import libj.error.Raise;
 import libj.utils.App;
-import libj.utils.Date;
+import libj.utils.Cal;
 import libj.utils.Text;
 import libj.utils.Xml;
 
@@ -27,9 +27,9 @@ import teamworks.TWObject;
 
 public class TWParser {
 
-	private String dateFormat = Date.defaultDateFormat;
-	private String timeFormat = Date.defaultTimeFormat;
-	private String doubleFormat = "";
+	private String dateFormat = Cal.DEFAULT_DATE_FORMAT;
+	private String timeFormat = Cal.DEFAULT_TIME_FORMAT;
+	private String doubleFormat = Text.EMPTY_STRING;
 
 	public String getDateFormat() {
 		return dateFormat;
@@ -104,8 +104,7 @@ public class TWParser {
 				int size = list.getArraySize();
 				for (int i = 0; i < size; i++) {
 
-					Element item = twParse(list.getArrayData(i), node,
- Xml.TAG_NAME_ITEM);
+					Element item = twParse(list.getArrayData(i), node, Xml.TAG_NAME_ITEM);
 
 					item.setAttribute(Xml.ATTR_NAME_INDEX, Integer.toString(i));
 				}
@@ -129,11 +128,9 @@ public class TWParser {
 
 			} else if (object instanceof GregorianCalendar) {
 
-				node.setAttribute(Xml.ATTR_NAME_TYPE,
-						java.util.Date.class.getSimpleName());
+				node.setAttribute(Xml.ATTR_NAME_TYPE, java.util.Date.class.getSimpleName());
 
-				java.util.Date dateObject = ((GregorianCalendar) object)
-						.getTime();
+				java.util.Date dateObject = ((GregorianCalendar) object).getTime();
 
 				node.setTextContent(fmtDate(dateObject));
 
@@ -182,8 +179,7 @@ public class TWParser {
 
 				if (Debug.isEnabled()) {
 
-					Log.debug("node=%s, type=%s, hex=%s", node.getNodeName(),
-							nodeType,
+					Log.debug("node=%s, type=%s, hex=%s", node.getNodeName(), nodeType,
 							Text.getHexString(object.toString().getBytes()));
 				}
 			}
@@ -281,18 +277,18 @@ public class TWParser {
 		if (dateFormat == null) {
 
 			XMLGregorianCalendar xgc;
-			xgc = Date.getXmlDate(date);
+			xgc = Cal.getXmlDate(date);
 			return xgc.toString();
 
 		} else {
-			return Date.formatDate(date, dateFormat);
+			return Cal.formatDate(date, dateFormat);
 		}
 	}
 
 	// форматирование времени
 	public String fmtTime(java.util.Date date) {
 
-		return Date.formatDate(date, timeFormat);
+		return Cal.formatDate(date, timeFormat);
 	}
 
 	// дата прописью

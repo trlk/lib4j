@@ -302,9 +302,6 @@ public class Xml {
 
 		try {
 
-			// DocumentBuilder b = DocumentBuilderFactory.newInstance()
-			// .newDocumentBuilder();
-
 			// Document doc = b.parse(inputStream);
 			Element root = doc.getDocumentElement();
 
@@ -376,6 +373,10 @@ public class Xml {
 		parentNode.appendChild(childNode);
 
 		return childNode;
+	}
+
+	public static Node getRoot(Document doc) {
+		return doc.getDocumentElement();
 	}
 
 	public static Node getChild(Node parentNode, String childName) {
@@ -616,8 +617,11 @@ public class Xml {
 	public static void setObject(Node node, Object value) {
 
 		if (value instanceof Date) {
-			setDate(node, (Date) value);
+
+			setDateTime(node, (Date) value);
+
 		} else {
+
 			setString(node, value.toString());
 		}
 	}
