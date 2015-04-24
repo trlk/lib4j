@@ -38,21 +38,23 @@ import org.w3c.dom.NodeList;
 
 public class Xml {
 
-	// date/time format
+	// defaults
+	public static char ATTR_DELIMITER = ':';
+	public static char ELEMENT_DELIMITER = '.';
+	public static boolean THROW_NOT_FOUND = false;
+	public static boolean PUT_EMPTY_NODES = Debug.isEnabled();
+
+	// constants
+	public static final int INDENT_LENGTH = 2;
+	public static final String ATTR_NAME_TYPE = "type";
+	public static final String ATTR_NAME_INDEX = "index";
+	public static final String TAG_NAME_ITEM = "item";
+	public static final String TAG_NAME_ITEMS = "items";
+
+	// xml date/time format
 	public static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static final String TIME_FORMAT = "HH:mm:ss";
 	public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-
-	// defaults, can be changed in runtime
-	public static int INDENT_LENGTH = 2;
-	public static boolean IS_PUT_EMPTY_NODES = Debug.isEnabled();
-	public static char ELEMENT_DELIMITER = '.';
-	public static char ATTR_DELIMITER = ':';
-	public static String ATTR_NAME_TYPE = "type";
-	public static String ATTR_NAME_INDEX = "index";
-	public static String TAG_NAME_ITEM = "item";
-	public static String TAG_NAME_ITEMS = "items";
-	public static boolean THROW_NOT_FOUND = false;
 
 	public static Document parse(InputStream inputStream) {
 
@@ -81,6 +83,7 @@ public class Xml {
 			return parse(Stream.newInputStream(inputString.getBytes(charsetName)));
 
 		} catch (Exception e) {
+			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -98,7 +101,7 @@ public class Xml {
 			transformer.transform(domSource, streamResult);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -150,6 +153,7 @@ public class Xml {
 			return xmlOutput.getWriter().toString();
 
 		} catch (Exception e) {
+			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -159,8 +163,9 @@ public class Xml {
 		if (node == null)
 			return null;
 
-		if (delimiter == 0)
-			Raise.runtimeException("%s: delimiter is null", App.thisMethodName());
+		if (delimiter == 0) {
+			Raise.runtimeException("%s: delimiter cannot be null", App.thisMethodName());
+		}
 
 		String path = null;
 
@@ -172,6 +177,7 @@ public class Xml {
 
 				// truncate namespace prefix
 				String[] nameParts = nodeName.split(":");
+
 				if (nameParts.length == 2) {
 					nodeName = nameParts[1];
 				}
@@ -183,16 +189,16 @@ public class Xml {
 					String nodeIndex = getAttrValue(n, ATTR_NAME_INDEX);
 
 					if (nodeIndex != null) {
-
 						nodeName = Text.printf("%s[%s]", nodeName, nodeIndex);
 					}
 				}
 
 				// build path
-				if (path == null)
+				if (path == null) {
 					path = nodeName;
-				else
+				} else {
 					path = nodeName + delimiter + path;
+				}
 			}
 		}
 
@@ -202,23 +208,19 @@ public class Xml {
 		return path;
 	}
 
-	public static String getNodePath(Node node) {
-
-		return getNodePath(node, ELEMENT_DELIMITER);
-	}
-
 	public static String getNodeXPath(Node node) {
 
 		return getNodePath(node, '/');
 	}
 
-	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes) {
+	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
+			char attrDelimiter) {
 
 		Map<String, String> map = new HashMap<String, String>();
 
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 
-			String path = getNodePath(node, ELEMENT_DELIMITER);
+			String path = getNodePath(node, elementDelimiter);
 
 			if (path != null) {
 
@@ -243,7 +245,7 @@ public class Xml {
 
 									Node attr = attrs.item(i);
 
-									String attrPath = path + ATTR_DELIMITER + attr.getNodeName();
+									String attrPath = path + attrDelimiter + attr.getNodeName();
 
 									map.put(attrPath, attr.getNodeValue());
 								}
@@ -259,21 +261,28 @@ public class Xml {
 
 		// recursive parse child
 		for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
-			map.putAll(createMap(child, putEmptyNodes));
+			map.putAll(createMap(child, putEmptyNodes, elementDelimiter, attrDelimiter));
 		}
 
 		return map;
 	}
 
-	public static Map<String, String> createMap(Document doc, Boolean putEmptyNodes) {
+	public static Map<String, String> createMap(Document doc, Boolean putEmptyNodes, char elementDelimiter,
+			char attrDelimiter) {
 
-		return createMap(doc.getDocumentElement(), putEmptyNodes);
+		return createMap(doc.getDocumentElement(), putEmptyNodes, elementDelimiter, attrDelimiter);
 	}
 
 	public static Map<String, String> createMap(Document doc) {
 
-		return createMap(doc, IS_PUT_EMPTY_NODES);
+		return createMap(doc, PUT_EMPTY_NODES);
 	}
+
+	public static Map<String, String> createMap(Document doc, Boolean putEmptyNodes) {
+
+		return createMap(doc, putEmptyNodes, ELEMENT_DELIMITER, ATTR_DELIMITER);
+	}
+
 
 	public static Map<String, String> createMap(InputStream inputStream, Boolean putEmptyNodes) {
 
@@ -287,12 +296,13 @@ public class Xml {
 		}
 
 		catch (Exception e) {
+			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
 
 	public static Map<String, String> createMap(InputStream inputStream) {
-		return createMap(inputStream, IS_PUT_EMPTY_NODES);
+		return createMap(inputStream, PUT_EMPTY_NODES);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -334,6 +344,7 @@ public class Xml {
 		}
 
 		catch (Exception e) {
+			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}

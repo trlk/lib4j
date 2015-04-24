@@ -108,6 +108,15 @@ public abstract class NamedStatement {
 	}
 
 	/**
+	 * Returns the statement connection.
+	 * 
+	 * @return the statement
+	 */
+	public Connection getConnection() throws SQLException {
+		return statement.getConnection();
+	}
+
+	/**
 	 * Returns the underlying statement.
 	 * 
 	 * @return the statement
@@ -437,7 +446,22 @@ public abstract class NamedStatement {
 	 * @see Statement#close()
 	 */
 	public void close() throws SQLException {
-		statement.close();
+
+		if (!statement.isClosed()) {
+			statement.close();
+		}
+	}
+
+	/**
+	 * Check if statement is closed
+	 * 
+	 * @throws SQLException
+	 *             if an error occurred
+	 * @see Statement#isClosed()
+	 */
+	public boolean isClosed() throws SQLException {
+
+		return statement.isClosed();
 	}
 
 	/**

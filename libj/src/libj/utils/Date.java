@@ -12,9 +12,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Deprecated
 public class Date {
 
-	public static final String defaultDateFormat = Cal.DEFAULT_DATE_FORMAT;
-	public static final String defaultTimeFormat = Cal.DEFAULT_TIME_FORMAT;
-
 	public static java.util.Date now() {
 
 		return Cal.now();

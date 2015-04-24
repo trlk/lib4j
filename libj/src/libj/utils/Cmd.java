@@ -27,7 +27,7 @@ public class Cmd {
 	private static Options options = new Options();
 	private static Map<Character, String> defaults = new HashMap<Character, String>();
 
-	public static void addKey(char opt, String longOpt, String description) {
+	public static synchronized void addKey(char opt, String longOpt, String description) {
 
 		Option option = new Option(String.valueOf(opt), longOpt, false,
 				description);
@@ -35,7 +35,7 @@ public class Cmd {
 		options.addOption(option);
 	}
 
-	public static void addOption(char opt, String longOpt, String description,
+	public static synchronized void addOption(char opt, String longOpt, String description,
 			String defaultValue) {
 
 		Option option = new Option(String.valueOf(opt), longOpt, true,
@@ -49,12 +49,12 @@ public class Cmd {
 		options.addOption(option);
 	}
 
-	public static void addOption(char opt, String longOpt, String description) {
+	public static synchronized void addOption(char opt, String longOpt, String description) {
 
 		addOption(opt, longOpt, description, null);
 	}
 
-	public static void parse(String[] args) {
+	public static synchronized void parse(String[] args) {
 
 		CommandLineParser parser = new GnuParser();
 		// CommandLineParser parser = new PosixParser();

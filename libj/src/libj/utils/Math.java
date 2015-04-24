@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public class Math {
 
-	public static int DEFAULT_SCALE = 2;
+	private static final int DEFAULT_SCALE = 2;
 
 	public static int nvl(Integer arg0, Integer arg1) {
 

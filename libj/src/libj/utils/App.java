@@ -3,6 +3,7 @@ package libj.utils;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import libj.debug.Debug;
 import libj.debug.Log;
 
 public class App {
@@ -39,38 +40,6 @@ public class App {
 		return trace[++i];
 	}
 
-	public static StackTraceElement thisTraceElement() {
-
-		return new Exception().getStackTrace()[1];
-		// return Thread.currentThread().getStackTrace()[2];
-	}
-
-	public static String thisClassName() {
-
-		return new Exception().getStackTrace()[1].getClassName();
-		// return Thread.currentThread().getStackTrace()[2].getMethodName();
-	}
-
-	public static String thisMethodName() {
-
-		return new Exception().getStackTrace()[1].getMethodName();
-	}
-
-	public static String thisMethodTrace() {
-
-		return new Exception().getStackTrace()[1].toString();
-	}
-
-	public static String thisFileName() {
-
-		return new Exception().getStackTrace()[1].getFileName();
-	}
-
-	public static int thisLineNumber() {
-
-		return new Exception().getStackTrace()[1].getLineNumber();
-	}
-
 	public static Charset getDefaultCharset() {
 		return Charset.defaultCharset();
 	}
@@ -79,12 +48,28 @@ public class App {
 		return getDefaultCharset().displayName();
 	}
 
+	public static String thisClassName() {
+
+		return Debug.prevClassName();
+	}
+
+	public static String thisMethodName() {
+
+		return Debug.prevClassName();
+	}
+
+	public static String thisMethodTrace() {
+
+		return Debug.prevMethodTrace();
+	}
+
 	public static void printHello() {
 		Log.info("[%s][%s][%s]", Cal.formatDate(Cal.now(), Cal.DEFAULT_DATE_FORMAT),
 				Cal.formatDate(Cal.now(), Cal.DEFAULT_DATE_FORMAT), App.getMainClassName());
 	}
 
 	public static void printEnvInfo() {
+
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("### Application environment ###\n");
@@ -107,4 +92,29 @@ public class App {
 		Log.info(sb.toString());
 	}
 
+	public static void printMemInfo() {
+
+		int mb = 1024 * 1024;
+
+		StringBuilder sb = new StringBuilder();
+
+		// Getting the runtime reference from system
+		Runtime runtime = Runtime.getRuntime();
+
+		sb.append(Text.printf("### Heap utilization statistics [MB] ###\n"));
+
+		// Print used memory
+		sb.append(Text.printf("Used Memory: %d\n", (runtime.totalMemory() - runtime.freeMemory()) / mb));
+
+		// Print free memory
+		sb.append(Text.printf("Free Memory: %d\n", runtime.freeMemory() / mb));
+
+		// Print total available memory
+		sb.append(Text.printf("Total Memory: %d\n", runtime.totalMemory() / mb));
+
+		// Print Maximum available memory
+		sb.append(Text.printf("Max Memory: %d\n", runtime.maxMemory() / mb));
+
+		Log.info(sb.toString());
+	}
 }

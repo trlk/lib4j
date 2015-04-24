@@ -7,7 +7,7 @@ public class Error {
 
 	public static String getText(Throwable e) {
 
-		return libj.debug.Error.getText(e);
+		return libj.debug.Error.getTextWithTrace(e);
 	}
 
 	public static void print(Throwable e, PrintStream stream) {

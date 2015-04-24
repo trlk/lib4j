@@ -1,4 +1,4 @@
-package libj.db;
+package libj.db.ora;
 
 /**
  * @author Taras Lyuklyanchuk
@@ -9,30 +9,21 @@ package libj.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import libj.db.Database;
 import libj.debug.Error;
 import libj.debug.Log;
 import libj.error.Raise;
 import libj.jdbc.NamedStatement;
 import libj.utils.Text;
 
-public class Oracle {
-
-	/*
-	 * константы
-	 */
-
-	// таймаут по-умолчанию
-	public static final Integer DEFAULT_TIMEOUT = 60;
-
-	// формат даты/времени по-умолчанию
-	public static final String DEFAULT_DATE_FORMAT = "dd.mm.yyyy";
-	public static final String DEFAULT_TIME_FORMAT = "hh24:mm:ss";
+public class Oracle extends Database {
 
 	// SQL codes
 	public static final Integer ORA_SUCCESS = 0;
@@ -41,27 +32,19 @@ public class Oracle {
 	public static final Integer ORA_USER_ERROR = 20000;
 	public static final Integer ORA_USER_TIMEOUT = 20999;
 
-	// SQL states
-	public static final String STATE_SUCCESS = "00000";
-	public static final String STATE_GENERAL_WARN = "01000";
-	public static final String STATE_GENERAL_ERROR = "HY000";
-	public static final String STATE_TIMEOUT_EXPIRED = "HYT00";
-
 	// jdbc driver class
-	public static final String DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
+	public static String DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
 
-	// TCP-порт по-умолчанию
-	public static final Integer DEFAULT_TCP_PORT = 1521;
+	// формат даты/времени по-умолчанию
+	public static String DATE_FORMAT = "dd.mm.yyyy";
+	public static String TIME_FORMAT = "hh24:mm:ss";
 
-	/*
-	 * переменные
-	 */
-
-	private Integer timeout = DEFAULT_TIMEOUT;
-	private String url;
+	// переменные
 	private String user;
 	private String password;
 	private Connection conn;
+	private Boolean isAutoCloseable = true;
+	private Boolean isMultiConnection = null;
 
 	// конструктор
 	public Oracle() {
@@ -82,33 +65,45 @@ public class Oracle {
 		connect(url, user, password);
 	}
 
-	// прочесть таймаут
-	public Integer getTimeout() {
-		return timeout;
+	// флаг автозакрытия соединения
+	public boolean isAutoCloseable() {
+		return isAutoCloseable;
 	}
 
-	// установить таймаут
-	public void setTimeout(Integer timeout) {
-		this.timeout = timeout;
+	// установить флаг автозакрытия соединения
+	public void setAutoCloseable(boolean isAutoCloseable) {
+		this.isAutoCloseable = isAutoCloseable;
 	}
 
-	// прочесть URL
-	public String getURL() {
-		return url;
+	// флаг мультиконнекта
+	public boolean isMultiConnection() {
+		return isMultiConnection;
+	}
+
+	// установить флаг мультиконнекта
+	public void setMultiConnection(boolean isMultiConnection) {
+		this.isMultiConnection = isMultiConnection;
 	}
 
 	// получить коннект
-	public Connection getConnection() {
+	public synchronized Connection getConnection() {
 
 		try {
 
-			if (conn == null) {
+			if (isMultiConnection) {
 
-				Raise.runtimeException("Connection not established yet");
+				connect();
 
-			} else if (conn.isClosed()) {
+			} else {
 
-				reconnect();
+				if (conn == null) {
+
+					Raise.runtimeException("Connection not established yet");
+
+				} else if (conn.isClosed()) {
+
+					reconnect();
+				}
 			}
 
 		} catch (Exception e) {
@@ -119,13 +114,13 @@ public class Oracle {
 	}
 
 	// получить коннект
-	public Connection conn() {
+	public synchronized Connection conn() {
 
 		return getConnection();
 	}
 
 	// подключиться
-	public void connect(String url) {
+	public synchronized void connect(String url) {
 
 		this.url = url;
 
@@ -133,7 +128,7 @@ public class Oracle {
 	}
 
 	// подключиться
-	public void connect(String url, String user, String password) {
+	public synchronized void connect(String url, String user, String password) {
 
 		this.url = url;
 		this.user = user;
@@ -143,27 +138,25 @@ public class Oracle {
 	}
 
 	// подключиться к базе
-	public void connect(String host, String sid, String user, String password) {
+	public synchronized void connect(String host, String sid, String user, String password) {
 
 		String url;
 
 		if (host.contains(":")) {
-
 			url = Text.printf("jdbc:oracle:thin:@%s/%s", host, sid);
 		} else {
-			url = Text.printf("jdbc:oracle:thin:@%s:%s/%s", host,
-					DEFAULT_TCP_PORT, sid);
+			url = Text.printf("jdbc:oracle:thin:@%s:%s/%s", host, 1521, sid);
 		}
 
 		connect(url, user, password);
 	}
 
 	// подключиться
-	public void connect() {
+	public synchronized void connect() {
 
 		try {
 
-			if (conn != null) {
+			if (conn != null && !isMultiConnection) {
 				disconnect();
 			}
 
@@ -178,31 +171,40 @@ public class Oracle {
 				// получаем коннект
 				conn = DriverManager.getConnection(url, user, password);
 
+				// флаг мультиконнекта				
+				if (isMultiConnection == null) {
+					setMultiConnection(false);
+				}
+
 			} else if (url.startsWith("jdbc/")) {
 
-				String fullURL = Text.sprintf("java:comp/env/%s", url);
-				DataSource ds = (DataSource) new InitialContext()
-						.lookup(fullURL);
+				String jndiURL = Text.sprintf("java:comp/env/%s", url);
+				DataSource ds = (DataSource) new InitialContext().lookup(jndiURL);
 
 				// получаем коннект
 				conn = ds.getConnection();
 
-			} else
+				// флаг мультиконнекта
+				if (isMultiConnection == null) {
+					setMultiConnection(true);
+				}
+
+			} else {
 				Raise.runtimeException("Invalid database URL: %s", url);
+			}
 
 			// установим параметры сессии
-			alterSession("NLS_DATE_FORMAT", DEFAULT_DATE_FORMAT);
+			alterSession("NLS_DATE_FORMAT", DATE_FORMAT);
 
 		} catch (Exception e) {
 
 			disconnect();
 			Raise.runtimeException(e);
 		}
-
 	}
 
 	// отключиться от базы
-	public void disconnect() {
+	public synchronized void disconnect() {
 
 		try {
 
@@ -211,12 +213,11 @@ public class Oracle {
 				conn.rollback();
 				conn.close();
 			}
+
 		} catch (Exception e) {
 
-			disconnect();
 			Raise.runtimeException(e);
 		}
-
 	}
 
 	// переподключиться
@@ -233,13 +234,13 @@ public class Oracle {
 
 			conn.commit();
 		}
-
 	}
 
 	// rollback
 	public void rollback() throws SQLException {
 
 		if (conn != null && !conn.isClosed()) {
+
 			conn.rollback();
 		}
 	}
@@ -275,18 +276,9 @@ public class Oracle {
 	// execute
 	public void execute(String sqlStatement) throws SQLException {
 
-		try {
+		PreparedStatement q = conn.prepareStatement(sqlStatement);
 
-			Log.debug("Execute sql: %s\n", sqlStatement);
-
-			Statement q = conn.createStatement();
-
-			q.execute(sqlStatement);
-
-		} catch (SQLException e) {
-
-			raise(e); // re-raise
-		}
+		execute(q);
 	}
 
 	// forced execute
@@ -307,6 +299,7 @@ public class Oracle {
 				execute(q); // retry
 
 			} else {
+
 				raise(e);
 			}
 		}
@@ -330,6 +323,7 @@ public class Oracle {
 				execute(q); // retry
 
 			} else {
+
 				raise(e);
 			}
 		}
@@ -401,8 +395,7 @@ public class Oracle {
 	}
 
 	// raise(message,state,code)
-	public void raise(String message, String sqlState, Integer sqlCode)
-			throws SQLException {
+	public void raise(String message, String sqlState, Integer sqlCode) throws SQLException {
 
 		throw new SQLException(message, sqlState, sqlCode);
 	}
@@ -416,11 +409,9 @@ public class Oracle {
 		// timeout handle
 		if (e.getErrorCode() == ORA_TIMEOUT) {
 
-			e = new SQLException("Request timeout", e.getSQLState(),
-					ORA_USER_TIMEOUT);
+			e = new SQLException("Request timeout", e.getSQLState(), ORA_USER_TIMEOUT);
 		} else {
-			e = new SQLException(truncMessage(e), e.getSQLState(),
-					e.getErrorCode());
+			e = new SQLException(truncMessage(e), e.getSQLState(), e.getErrorCode());
 		}
 
 		throw e;
@@ -436,6 +427,108 @@ public class Oracle {
 			raise((SQLException) e);
 		} else {
 			raise(truncMessage(e));
+		}
+	}
+
+	// executeQuery
+	public ResultSet executeQuery(String sqlStatement) throws SQLException {
+
+		PreparedStatement q = conn.prepareStatement(sqlStatement);
+
+		return executeQuery(q);
+	}
+
+	// executeQuery
+	public ResultSet executeQuery(PreparedStatement q) throws SQLException {
+
+		try {
+
+			q.setQueryTimeout(this.timeout);
+
+			return q.executeQuery();
+
+		} catch (SQLException e) {
+
+			raise(e);
+		}
+
+		return null;
+	}
+
+	// close ResultSet
+	public void close(ResultSet q) {
+
+		try {
+
+			if (!isAutoCloseable) {
+
+				q.close();
+
+			} else {
+
+				Statement stmt = q.getStatement();
+
+				q.close();
+				close(stmt);
+			}
+
+		} catch (SQLException e) {
+			Log.error(e);
+		}
+	}
+
+	// close Statement
+	public void close(Statement q) {
+
+		try {
+
+			if (q != null && !q.isClosed()) {
+
+				if (!isAutoCloseable) {
+
+					q.close();
+
+				} else {
+
+					Connection conn = q.getConnection();
+
+					q.close();
+					close(conn);
+				}
+			}
+
+		} catch (SQLException e) {
+			Log.error(e);
+		}
+	}
+
+	// close NamedStatement
+	public void close(NamedStatement q) {
+
+		if (q != null) {
+			close(q.getStatement());
+		}
+	}
+
+	// close Connection
+	public void close(Connection q) {
+
+		try {
+
+			if (q != null && !q.isClosed()) {
+				q.close();
+			}
+
+		} catch (SQLException e) {
+			Log.error(e);
+		}
+	}
+
+	// instance finalizer
+	protected void finalize() {
+
+		if (conn != null && isAutoCloseable) {
+			close(conn);
 		}
 	}
 
