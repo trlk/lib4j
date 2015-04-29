@@ -88,3 +88,6 @@ GeneratedBarFiles/
 RemoteSystemsTempFiles/
 .mtj.tmp/
 hs_err_pid*
+
+#libj ignores
+libj-test/
