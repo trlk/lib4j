@@ -12,6 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 
+import libj.error.Raise;
 import libj.utils.Cal;
 import libj.utils.Text;
 
@@ -25,6 +26,12 @@ public class Log implements Serializable {
 	public static final int INFO = 3;
 	public static final int DEBUG = 4;
 	public static final int TRACE = 5; // the least serious
+	public static final int DEFAULT_LEVEL = INFO;
+	public static final int FORMAT_NONE = 0;
+	public static final int FORMAT_BRIEF = 1;
+	public static final int FORMAT_FULL = 2;
+	public static final int DEFAULT_FORMAT = FORMAT_BRIEF;
+
 	private static final String[] LEVEL_NAMES = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
 	private static final String loggerJNDI = Log.class.getName();
 
@@ -32,7 +39,9 @@ public class Log implements Serializable {
 	private static volatile Log INSTANCE;
 
 	// private variables
-	private int level = INFO;
+	private int level = DEFAULT_LEVEL;
+	private int outFormat = FORMAT_BRIEF;
+	private int fileFormat = FORMAT_FULL;
 	private String fileName;
 
 	// streams
@@ -120,6 +129,11 @@ public class Log implements Serializable {
 		}
 	}
 
+	public static boolean isLevel(int level) {
+
+		return level <= getInstance().level;
+	}
+
 	public static int getLevel() {
 
 		return getInstance().level;
@@ -136,28 +150,56 @@ public class Log implements Serializable {
 	}
 
 	public static PrintStream getOutStream() {
+
 		return getInstance().outStream;
 	}
 
 	public static void setOutStream(PrintStream outStream) {
 
-		getInstance().outStream = outStream;
+		Log log = getInstance();
+
+		// outStream
+		log.outStream = outStream;
+
+		// errStream
+		if (log.errStream == log.outStream) {
+			log.errStream = null;
+		}
 	}
 
-	public static PrintStream getErrStream() {
-
-		return getInstance().errStream;
-	}
-
-	public static void setErrStream(PrintStream errStream) {
+	public static void setOutStream(PrintStream outStream, PrintStream errStream) {
 
 		Log log = getInstance();
 
+		// outStream
+		log.outStream = outStream;
+
+		// errStream
 		if (errStream != log.outStream) {
 			log.errStream = errStream;
 		} else {
 			log.errStream = null;
 		}
+	}
+
+	public static int getOutFormat() {
+
+		return getInstance().outFormat;
+	}
+
+	public static void setOutFormat(int format) {
+
+		getInstance().outFormat = format;
+	}
+
+	public static int getFileFormat() {
+
+		return getInstance().fileFormat;
+	}
+
+	public static void setFileFormat(int format) {
+
+		getInstance().fileFormat = format;
 	}
 
 	public static String getFileName() {
@@ -188,43 +230,74 @@ public class Log implements Serializable {
 		}
 	}
 
-	private static void log(int level, StackTraceElement trace, String text) {
+	private static String format(int format, int level, StackTraceElement trace, String text) {
 
-		// get instance
-		Log log = getInstance();
+		switch (format) {
+		case FORMAT_NONE: {
 
-		// appropriate level?
-		if (level <= log.level) {
+			return text;
+		}
+		case FORMAT_BRIEF: {
 
-			String line = Text.printf("%s: %s", LEVEL_NAMES[level], text);
+			return Text.printf("%s: %s", LEVEL_NAMES[level], text);
+		}
+		case FORMAT_FULL: {
 
-			// stdout
-			print(log.outStream, line);
+			// full format logging
+			String dateString = Cal.formatDate(Cal.now(), "yyyy-MM-dd HH:mm:ss:SSS");
+			String source = Text.printf("%s:%d", trace.getClassName(), trace.getLineNumber());
 
-			// stderr
-			if (log.errStream != null && level <= ERROR) {
-
-				if (log.errStream != log.outStream) {
-					print(log.errStream, line);
-				}
+			// last part of class name
+			if (source.contains(".")) {
+				source = Text.substr(source, source.lastIndexOf(".") + 2);
 			}
 
-			// file
-			if (log.fileStream != null) {
+			return Text.printf("%-5s %s %-13.13s %s", LEVEL_NAMES[level], dateString, source, text);
+		}
 
-				// full format logging
-				String dateString = Cal.formatDate(Cal.now(), "yyyy-MM-dd HH:mm:ss:SSS");
-				String source = trace.getClassName();
+		default:
+			Raise.runtimeException("[%d] Unknown format", format);
+		}
 
-				// last part of class name
-				if (source.contains(".")) {
+		return null;
+	}
 
-					source = Text.substr(source, source.lastIndexOf(".") + 2);
+	private static void log(int level, StackTraceElement trace, String text) {
+
+		// if text not empty
+		if (text != null && !text.isEmpty()) {
+
+			// get instance
+			Log log = getInstance();
+
+			// appropriate level?
+			if (level <= log.level) {
+
+				String outLine = format(log.outFormat, level, trace, text);
+
+				// stdout
+				print(log.outStream, outLine);
+
+				// stderr
+				if (log.errStream != null && level <= ERROR) {
+
+					if (log.errStream != log.outStream) {
+						print(log.errStream, outLine);
+					}
 				}
 
-				String fileLine = Text.printf("%-5s %s %-13.13s %s", LEVEL_NAMES[level], dateString, source, text);
+				// file
+				if (log.fileStream != null) {
 
-				print(log.fileStream, fileLine);
+					String fileline = outLine;
+
+					if (log.fileFormat != log.outFormat) {
+
+						fileline = format(log.fileFormat, level, trace, text);
+					}
+
+					print(log.fileStream, fileline);
+				}
 			}
 		}
 	}
