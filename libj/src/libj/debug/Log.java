@@ -12,7 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 
-import libj.error.Raise;
+import libj.error.Throw;
 import libj.utils.Cal;
 import libj.utils.Text;
 
@@ -145,7 +145,7 @@ public class Log implements Serializable {
 
 			getInstance().level = level;
 
-			info("Logging level changed to '%s'", LEVEL_NAMES[level]);
+			info("Logging level was changed to '%s'", LEVEL_NAMES[level]);
 		}
 	}
 
@@ -256,7 +256,7 @@ public class Log implements Serializable {
 		}
 
 		default:
-			Raise.runtimeException("[%d] Unknown format", format);
+			Throw.runtimeException("[%d] Unknown format", format);
 		}
 
 		return null;
