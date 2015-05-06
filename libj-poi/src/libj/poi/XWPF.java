@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 import libj.utils.App;
 
 import org.apache.poi.xwpf.converter.pdf.PdfConverter;
@@ -114,7 +114,7 @@ public class XWPF {
 			return new XWPFDocument(documentStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -128,7 +128,7 @@ public class XWPF {
 			return openDocument(fileStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -167,7 +167,7 @@ public class XWPF {
 			report.process(context, reportStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -203,7 +203,7 @@ public class XWPF {
 			PdfConverter.getInstance().convert(document, pdfStream, options);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 

@@ -10,7 +10,7 @@ import java.util.Map;
 
 import libj.debug.Debug;
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 import libj.utils.Stream;
 import libj.utils.Xml;
 import net.sf.jxls.transformer.XLSTransformer;
@@ -35,7 +35,7 @@ public class EngineJXLS {
 			this.data = Xml.parse(dataStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -69,7 +69,7 @@ public class EngineJXLS {
 			return outputStream;
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -99,7 +99,7 @@ public class EngineJXLS {
 			transformer.transformWorkbook(doc, beans);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class EngineJXLS {
 			doc.write(resultStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 }

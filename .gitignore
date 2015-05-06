@@ -90,4 +90,4 @@ RemoteSystemsTempFiles/
 hs_err_pid*
 
 #libj ignores
-libj-test/
+test/

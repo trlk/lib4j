@@ -12,7 +12,7 @@ import java.util.TreeSet;
 
 import libj.debug.Debug;
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 import libj.utils.App;
 import libj.utils.Stream;
 import libj.utils.Xml;
@@ -42,7 +42,7 @@ public class EngineXWPF {
 			setData(Xml.parse(dataStream));
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -107,7 +107,7 @@ public class EngineXWPF {
 			return outputStream;
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -225,7 +225,7 @@ public class EngineXWPF {
 			}
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -254,7 +254,7 @@ public class EngineXWPF {
 			}
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -267,7 +267,7 @@ public class EngineXWPF {
 			doc.write(resultStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -280,7 +280,7 @@ public class EngineXWPF {
 			XWPF.documentToPDF(doc, pdfStream);
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
