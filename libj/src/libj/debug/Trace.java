@@ -6,10 +6,11 @@ public class Trace {
 
 	// constants
 	public static final int PRINT = 0;
-	public static final int BEGIN = 1;
-	public static final int END = 2;
-	public static final int LOOP = 3;
-	private static final String[] EVENT_NAMES = { "PRINT", "BEGIN", "END", "LOOP" };
+	public static final int HELLO = 1;
+	public static final int BEGIN = 2;
+	public static final int END = 3;
+	public static final int LOOP = 4;
+	private static final String[] EVENT_NAMES = { null, "HELLO", "BEGIN", "END", "LOOP" };
 
 	// variables
 	private static boolean isEnabled = Log.getLevel() == Log.TRACE;
@@ -29,71 +30,80 @@ public class Trace {
 		return isEnabled;
 	}
 
-	private static void trace(int event, String callerClass, String callerMethod) {
+	private static String getSource(StackTraceElement trace) {
+		return Text.printf("%s.%s:%s", trace.getClassName(), trace.getMethodName(), trace.getLineNumber());
+	}
+
+	private static void trace(int event, StackTraceElement trace) {
 
 		if (isEnabled) {
-			Log.print("%s %s.%s", EVENT_NAMES[event], callerClass, callerMethod);
+			Log.trace("%-5s %s", EVENT_NAMES[event], getSource(trace));
 		}
 	}
 
-	private static void trace(int event, String callerClass, String callerMethod, String text) {
+	private static void trace(int event, StackTraceElement trace, String text) {
 
 		if (isEnabled) {
-			Log.print("%s %s.%s: %s", EVENT_NAMES[event], callerClass, callerMethod, text);
+			Log.trace("%-5s %s (%s)", EVENT_NAMES[event], getSource(trace), text);
 		}
 	}
 
-	public static void print(String text) {
-		trace(PRINT, Debug.prevClassName(), Debug.prevMethodName(), text);
+	public static void hello() {
+
+		trace(HELLO, Debug.prevTraceElement());
 	}
 
-	public static void print(String format, Object... args) {
-		trace(PRINT, Debug.prevClassName(), Debug.prevMethodName(), Text.printf(format, args));
+	public static void hello(String text) {
+		trace(HELLO, Debug.prevTraceElement(), text);
+	}
+
+	public static void hello(String format, Object... args) {
+		trace(HELLO, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
 	public static void begin() {
 
-		trace(BEGIN, Debug.prevClassName(), Debug.prevMethodName());
+		trace(BEGIN, Debug.prevTraceElement());
 	}
 
 	public static void begin(String text) {
 
-		trace(BEGIN, Debug.prevClassName(), Debug.prevMethodName(), text);
+		trace(BEGIN, Debug.prevTraceElement(), text);
 	}
 
 	public static void begin(String format, Object... args) {
 
-		trace(BEGIN, Debug.prevClassName(), Debug.prevMethodName(), Text.printf(format, args));
+		trace(BEGIN, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
 	public static void end() {
 
-		trace(END, Debug.prevClassName(), Debug.prevMethodName());
+		trace(END, Debug.prevTraceElement());
 	}
 
 	public static void end(String text) {
 
-		trace(END, Debug.prevClassName(), Debug.prevMethodName(), text);
+		trace(END, Debug.prevTraceElement(), text);
 	}
 
 	public static void end(String format, Object... args) {
 
-		trace(END, Debug.prevClassName(), Debug.prevMethodName(), Text.printf(format, args));
+		trace(END, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
 	public static void loop() {
 
-		trace(LOOP, Debug.prevClassName(), Debug.prevMethodName());
+		trace(LOOP, Debug.prevTraceElement());
 	}
 
 	public static void loop(String text) {
 
-		trace(LOOP, Debug.prevClassName(), Debug.prevMethodName(), text);
+		trace(LOOP, Debug.prevTraceElement(), text);
 	}
 
 	public static void loop(String format, Object... args) {
 
-		trace(LOOP, Debug.prevClassName(), Debug.prevMethodName(), Text.printf(format, args));
+		trace(LOOP, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
 }
