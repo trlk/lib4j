@@ -61,7 +61,7 @@ public class Xmap extends Xnode {
 	}
 
 	public Xnode set(int index, Object object) {
-		throw new RuntimeException2("Cannot set by index into map: %s[%d]", name, index);
+		throw new RuntimeException2("Cannot set by index within map: %s[%d]", name, index);
 	}
 
 }

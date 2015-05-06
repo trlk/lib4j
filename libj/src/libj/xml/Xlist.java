@@ -125,7 +125,7 @@ public class Xlist extends Xnode {
 	}
 
 	public Xnode set(String name, Object object) {
-		throw new RuntimeException2("Cannot set by name into list: %s/%s", this.name, name);
+		throw new RuntimeException2("Cannot set by name within list: %s/%s", this.name, name);
 	}
 
 	public void remove(int index) {

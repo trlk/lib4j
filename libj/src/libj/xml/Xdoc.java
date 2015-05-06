@@ -5,6 +5,7 @@ import java.util.Map;
 
 import libj.debug.Log;
 import libj.error.Throw;
+import libj.utils.Text;
 import libj.utils.Xml;
 
 import org.w3c.dom.Document;
@@ -61,6 +62,40 @@ public class Xdoc {
 
 	public Xnode root() {
 		return root;
+	}
+
+	public Xnode eval(String expr) {
+
+		if (expr.charAt(0) != '/') {
+			Throw.runtimeException("Evaluation error: %s", expr);
+		} else {
+			expr = Text.substr(expr, 2);
+		}
+
+		// split by "/"
+		String[] parts = expr.split("/");
+
+		// root name check
+		if (!getRootName().equals(parts[0])) {
+			Throw.runtimeException("Root node evaluation error: %d:%s", 0, parts[0]);
+		}
+
+		Xnode node = getRoot();
+		for (int i = 1; i < parts.length; i++) {
+
+			String name = parts[i];
+
+			if (name.contains("[")) {
+
+				int index = Integer.parseInt(name.split("\\[")[1].split("\\]")[0]);
+				node = node.get(name.split("\\[")[0]).get(index);
+
+			} else {
+				node = node.get(name);
+			}
+		}
+
+		return node;
 	}
 
 	private Xnode parse(Node node) {

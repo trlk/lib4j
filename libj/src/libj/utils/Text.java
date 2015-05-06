@@ -160,12 +160,18 @@ public class Text {
 		return sb.toString();
 	}
 
+	public static String[] slit(String text, String expr) {
+
+		return text.split(expr);
+	}
+
 	public static String[] caseSplit(String text) {
 
 		ArrayList<String> result = new ArrayList<String>();
 
-		boolean prevCase = false;
 		int prevIndex = 0;
+		boolean prevCase = false;
+
 		for (int i = 0; i < text.length(); i++) {
 
 			String symbol = text.substring(i, i + 1);
@@ -179,8 +185,9 @@ public class Text {
 			prevCase = symbolCase;
 		}
 
-		if (prevIndex < text.length())
+		if (prevIndex < text.length()) {
 			result.add(text.substring(prevIndex, text.length()));
+		}
 
 		return result.toArray(new String[result.size()]);
 	}
