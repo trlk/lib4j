@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 import libj.db.Database;
 import libj.debug.Error;
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 import libj.jdbc.NamedStatement;
 import libj.utils.Text;
 
@@ -98,7 +98,7 @@ public class Oracle extends Database {
 
 				if (conn == null) {
 
-					Raise.runtimeException("Connection not established yet");
+					Throw.runtimeException("Connection not established yet");
 
 				} else if (conn.isClosed()) {
 
@@ -107,7 +107,7 @@ public class Oracle extends Database {
 			}
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return conn;
@@ -162,7 +162,7 @@ public class Oracle extends Database {
 
 			if (url == null) {
 
-				Raise.runtimeException("Database URL not specified");
+				Throw.runtimeException("Database URL not specified");
 
 			} else if (url.startsWith("jdbc:")) {
 
@@ -190,7 +190,7 @@ public class Oracle extends Database {
 				}
 
 			} else {
-				Raise.runtimeException("Invalid database URL: %s", url);
+				Throw.runtimeException("Invalid database URL: %s", url);
 			}
 
 			// установим параметры сессии
@@ -199,7 +199,7 @@ public class Oracle extends Database {
 		} catch (Exception e) {
 
 			disconnect();
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 
@@ -216,7 +216,7 @@ public class Oracle extends Database {
 
 		} catch (Exception e) {
 
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 

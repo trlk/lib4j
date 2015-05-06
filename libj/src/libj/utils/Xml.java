@@ -28,7 +28,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import libj.debug.Debug;
-import libj.error.Raise;
+import libj.error.Throw;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,17 +39,25 @@ import org.w3c.dom.NodeList;
 public class Xml {
 
 	// defaults
+	@Deprecated
 	public static char ATTR_DELIMITER = ':';
+
+	@Deprecated
 	public static char ELEMENT_DELIMITER = '.';
+
+	@Deprecated
 	public static boolean THROW_NOT_FOUND = false;
+
+	@Deprecated
 	public static boolean PUT_EMPTY_NODES = Debug.isEnabled();
 
 	// constants
-	public static final int INDENT_LENGTH = 2;
+	public static char XPATH_DELIMITER = '/';
 	public static final String ATTR_NAME_TYPE = "type";
 	public static final String ATTR_NAME_INDEX = "index";
 	public static final String TAG_NAME_ITEM = "item";
 	public static final String TAG_NAME_ITEMS = "items";
+	public static final int INDENT_LENGTH = 2;
 
 	// xml date/time format
 	public static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -164,7 +172,7 @@ public class Xml {
 			return null;
 
 		if (delimiter == 0) {
-			Raise.runtimeException("%s: delimiter cannot be null", App.thisMethodName());
+			Throw.runtimeException("%s: delimiter cannot be null", App.thisMethodName());
 		}
 
 		String path = null;
@@ -202,15 +210,21 @@ public class Xml {
 			}
 		}
 
-		if (delimiter == '/')
+		if (delimiter == XPATH_DELIMITER) {
 			path = delimiter + path;
+		}
 
 		return path;
 	}
 
+	public static String getNodePath(Node node) {
+
+		return getNodePath(node, ELEMENT_DELIMITER);
+	}
+
 	public static String getNodeXPath(Node node) {
 
-		return getNodePath(node, '/');
+		return getNodePath(node, XPATH_DELIMITER);
 	}
 
 	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
@@ -283,7 +297,6 @@ public class Xml {
 		return createMap(doc, putEmptyNodes, ELEMENT_DELIMITER, ATTR_DELIMITER);
 	}
 
-
 	public static Map<String, String> createMap(InputStream inputStream, Boolean putEmptyNodes) {
 
 		try {
@@ -349,6 +362,29 @@ public class Xml {
 		}
 	}
 
+	public static Node createNode(Document doc, String nodeName) {
+
+		Node node = doc.createElement(nodeName);
+
+		return node;
+	}
+
+	public static Node createChild(Node parentNode, String childName) {
+
+		Document doc;
+
+		if (parentNode instanceof Document) {
+			doc = (Document) parentNode;
+		} else {
+			doc = parentNode.getOwnerDocument();
+		}
+
+		Node childNode = createNode(doc, childName);
+		parentNode.appendChild(childNode);
+
+		return childNode;
+	}
+
 	public static Document createDocument() {
 
 		try {
@@ -358,7 +394,7 @@ public class Xml {
 			return b.newDocument();
 
 		} catch (ParserConfigurationException e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -369,21 +405,6 @@ public class Xml {
 		Document doc = createDocument();
 
 		return createChild(doc, rootName);
-	}
-
-	public static Node createChild(Node parentNode, String childName) {
-
-		Document doc;
-
-		if (parentNode instanceof Document)
-			doc = (Document) parentNode;
-		else
-			doc = parentNode.getOwnerDocument();
-
-		Node childNode = doc.createElement(childName);
-		parentNode.appendChild(childNode);
-
-		return childNode;
 	}
 
 	public static Node getRoot(Document doc) {
@@ -429,7 +450,7 @@ public class Xml {
 
 		if (attr != null) {
 			setNodeValue(attr, value);
-		} else {
+		} else if (value != null) {
 			NamedNodeMap attributes = node.getAttributes();
 			attr = node.getOwnerDocument().createAttribute(attrName);
 			attr.setNodeValue(value);
@@ -459,7 +480,7 @@ public class Xml {
 			result = (NodeList) xPath.evaluate(xpath, node, XPathConstants.NODESET);
 
 		} catch (XPathExpressionException e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return result;
@@ -477,14 +498,14 @@ public class Xml {
 		if (nodes.getLength() == 0) {
 
 			if (THROW_NOT_FOUND) {
-				Raise.runtimeException("Node not found");
+				Throw.runtimeException("Node not found");
 			} else {
 				return null;
 			}
 
 		} else if (nodes.getLength() > 1) {
 
-			Raise.runtimeException("More then one nodes found");
+			Throw.runtimeException("More then one nodes found");
 		}
 
 		return nodes.item(0);
@@ -550,7 +571,7 @@ public class Xml {
 
 		} catch (Exception e) {
 
-			Raise.runtimeException("Unparseable boolean: %s", value);
+			Throw.runtimeException("Unparseable boolean: %s", value);
 		}
 
 		return null;
@@ -566,7 +587,7 @@ public class Xml {
 
 		} catch (Exception e) {
 
-			Raise.runtimeException("Unparseable integer: %s", value);
+			Throw.runtimeException("Unparseable integer: %s", value);
 		}
 
 		return null;
@@ -582,7 +603,7 @@ public class Xml {
 
 		} catch (Exception e) {
 
-			Raise.runtimeException("Unparseable float: %s", value);
+			Throw.runtimeException("Unparseable float: %s", value);
 		}
 
 		return null;
@@ -593,12 +614,10 @@ public class Xml {
 		String value = getString(node, xpath);
 
 		try {
-
 			return new Double(value);
 
 		} catch (Exception e) {
-
-			Raise.runtimeException("Unparseable double: %s", value);
+			Throw.runtimeException("Unparseable double: %s", value);
 		}
 
 		return null;
@@ -609,12 +628,10 @@ public class Xml {
 		String value = getString(node, xpath);
 
 		try {
-
 			return new BigDecimal(value);
 
 		} catch (Exception e) {
-
-			Raise.runtimeException("Unparseable bigDecimal: %s", value);
+			Throw.runtimeException("Unparseable bigDecimal: %s", value);
 		}
 
 		return null;
@@ -627,13 +644,13 @@ public class Xml {
 
 	public static void setObject(Node node, Object value) {
 
-		if (value instanceof Date) {
+		if (value != null) {
 
-			setDateTime(node, (Date) value);
-
-		} else {
-
-			setString(node, value.toString());
+			if (value instanceof Date) {
+				setDateTime(node, (Date) value);
+			} else {
+				setString(node, value.toString());
+			}
 		}
 	}
 

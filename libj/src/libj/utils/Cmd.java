@@ -6,7 +6,7 @@ import java.util.Map;
 
 import libj.debug.Debug;
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -87,7 +87,7 @@ public class Cmd {
 		} catch (Exception e) {
 
 			printUsage();
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 	}
 

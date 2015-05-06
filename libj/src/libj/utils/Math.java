@@ -2,6 +2,8 @@ package libj.utils;
 
 import java.math.BigDecimal;
 
+import libj.error.RuntimeException2;
+
 public class Math {
 
 	private static final int DEFAULT_SCALE = 2;
@@ -126,14 +128,54 @@ public class Math {
 		return arg0 % arg1;
 	}
 
+	public static int toInt(String value) {
+
+		return Integer.parseInt(value);
+	}
+
+	public static Integer toInteger(String value) {
+
+		return toInt(value);
+	}
+
+	public static float toFloat(String value) {
+
+		try {
+			return new Float(value);
+
+		} catch (Exception e) {
+			throw new RuntimeException2("Unparseable float: %s", value);
+		}
+	}
+
 	public static float toFloat(BigDecimal bigDecimal) {
 
 		return bigDecimal.floatValue();
 	}
 
+	public static double toDouble(String value) {
+
+		try {
+			return new Double(value);
+
+		} catch (Exception e) {
+			throw new RuntimeException2("Unparseable double: %s", value);
+		}
+	}
+
 	public static double toDouble(BigDecimal bigDecimal) {
 
 		return bigDecimal.doubleValue();
+	}
+
+	public static BigDecimal toBigDecimal(String value) {
+
+		try {
+			return new BigDecimal(value);
+
+		} catch (Exception e) {
+			throw new RuntimeException2("Unparseable bigDecimal: %s", value);
+		}
 	}
 
 	public static BigDecimal toBigDecimal(float amount, int scale) {

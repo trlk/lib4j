@@ -11,7 +11,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
-import libj.error.Raise;
+import libj.error.Throw;
 
 public class Text {
 
@@ -94,13 +94,15 @@ public class Text {
 				beginIndex = pos - 1;
 			} else if (pos < 0) {
 				beginIndex = line.length() + pos;
-			} else
-				Raise.runtimeException("Invalid argument value");
+			} else {
+				Throw.runtimeException("Invalid argument value");
+			}
 
 			Integer endIndex = line.length();
 
-			if (beginIndex > endIndex)
-				Raise.runtimeException("Invalid argument value");
+			if (beginIndex > endIndex) {
+				Throw.runtimeException("Invalid argument value");
+			}
 
 			return line.substring(beginIndex, endIndex);
 

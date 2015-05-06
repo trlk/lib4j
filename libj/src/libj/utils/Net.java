@@ -3,7 +3,7 @@ package libj.utils;
 import java.net.InetAddress;
 
 import libj.debug.Log;
-import libj.error.Raise;
+import libj.error.Throw;
 
 public class Net {
 
@@ -14,7 +14,7 @@ public class Net {
 			return InetAddress.getLocalHost().getHostName();
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -27,7 +27,7 @@ public class Net {
 			return InetAddress.getLocalHost().getHostAddress();
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
@@ -48,7 +48,7 @@ public class Net {
 			return result;
 
 		} catch (Exception e) {
-			Raise.runtimeException(e);
+			Throw.runtimeException(e);
 		}
 
 		return null;
