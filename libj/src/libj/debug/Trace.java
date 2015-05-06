@@ -10,11 +10,7 @@ public class Trace {
 	public static final int BEGIN = 2;
 	public static final int END = 3;
 	public static final int LOOP = 4;
-<<<<<<< HEAD
 	private static final String[] EVENT_NAMES = { "PRINT", "HELLO", "BEGIN", "END", "LOOP" };
-=======
-	private static final String[] EVENT_NAMES = { null, "HELLO", "BEGIN", "END", "LOOP" };
->>>>>>> 5c2954c8f4320c562c80aa07fc721aaf76764c38
 
 	// variables
 	private static boolean isEnabled = Log.getLevel() == Log.TRACE;
@@ -52,7 +48,6 @@ public class Trace {
 		}
 	}
 
-<<<<<<< HEAD
 	public static void print(String text) {
 		trace(PRINT, Debug.prevTraceElement(), text);
 	}
@@ -70,17 +65,6 @@ public class Trace {
 		trace(HELLO, Debug.prevTraceElement(), text);
 	}
 
-=======
-	public static void hello() {
-
-		trace(HELLO, Debug.prevTraceElement());
-	}
-
-	public static void hello(String text) {
-		trace(HELLO, Debug.prevTraceElement(), text);
-	}
-
->>>>>>> 5c2954c8f4320c562c80aa07fc721aaf76764c38
 	public static void hello(String format, Object... args) {
 		trace(HELLO, Debug.prevTraceElement(), Text.printf(format, args));
 	}
