@@ -159,9 +159,19 @@ public abstract class Xnode {
 		return get(name).toString();
 	}
 
+	public String getString(int index) {
+
+		return get(index).toString();
+	}
+
 	public Date getDate(String name) {
 
 		return get(name).toDate();
+	}
+
+	public Date getDate(int index) {
+
+		return get(index).toDate();
 	}
 
 	public Date getDate(String name, String format) {
@@ -169,9 +179,19 @@ public abstract class Xnode {
 		return get(name).toDate(format);
 	}
 
+	public Date getDate(int index, String format) {
+
+		return get(index).toDate(format);
+	}
+
 	public Date getDateTime(String name) {
 
 		return get(name).toDateTime();
+	}
+
+	public Date getDateTime(int index) {
+
+		return get(index).toDateTime();
 	}
 
 	public Integer getInteger(String name) {
@@ -179,9 +199,19 @@ public abstract class Xnode {
 		return get(name).toInteger();
 	}
 
+	public Integer getInteger(int index) {
+
+		return get(index).toInteger();
+	}
+
 	public Float getFloat(String name) {
 
 		return get(name).toFloat();
+	}
+
+	public Float getFloat(int index) {
+
+		return get(index).toFloat();
 	}
 
 	public Double getDouble(String name) {
@@ -189,9 +219,19 @@ public abstract class Xnode {
 		return get(name).toDouble();
 	}
 
+	public Double getDouble(int index) {
+
+		return get(index).toDouble();
+	}
+
 	public BigDecimal getBigDecimal(String name) {
 
 		return get(name).toBigDecimal();
+	}
+
+	public BigDecimal getBigDecimal(int index) {
+
+		return get(index).toBigDecimal();
 	}
 
 }

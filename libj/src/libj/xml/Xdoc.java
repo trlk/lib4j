@@ -78,9 +78,11 @@ public class Xdoc {
 		// root name check
 		if (!getRootName().equals(parts[0])) {
 			Throw.runtimeException("Root node evaluation error: %d:%s", 0, parts[0]);
+		} else if (parts.length == 0) {
+			return root();
 		}
 
-		Xnode node = getRoot();
+		Xnode node = root();
 		for (int i = 1; i < parts.length; i++) {
 
 			String name = parts[i];
