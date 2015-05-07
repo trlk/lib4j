@@ -1,45 +1,45 @@
-package libj.xml;
+package libj.dom;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import libj.error.RuntimeException2;
 
-public class Xlist extends Xnode {
+public class ListDataNode extends DataNode {
 
 	private String itemName = "item";
 
-	private Xlist() {
+	private ListDataNode() {
 
-		super(new ArrayList<Xnode>());
+		super(new ArrayList<DataNode>());
 	}
 
-	public Xlist(String name) {
+	public ListDataNode(String name) {
 
 		this();
 		setName(name);
 	}
 
-	public Xlist(String name, String itemName) {
+	public ListDataNode(String name, String itemName) {
 
 		this(name);
 		setItemName(itemName);
 	}
 
-	public Xlist(Xnode parent, String name) {
+	public ListDataNode(DataNode parent, String name) {
 
 		this(name);
 		parent.set(name, this);
 	}
 
-	public Xlist(Xnode parent, String name, String itemName) {
+	public ListDataNode(DataNode parent, String name, String itemName) {
 
 		this(name, itemName);
 		parent.set(name, this);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public Xlist(String name, List list) {
+	public ListDataNode(String name, List list) {
 
 		this(name);
 
@@ -57,33 +57,33 @@ public class Xlist extends Xnode {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Xnode> list() {
+	public List<DataNode> list() {
 
-		return (List<Xnode>) this.getObject();
+		return (List<DataNode>) this.getObject();
 	}
 
-	public Xnode add(Xnode xnode) {
+	public DataNode add(DataNode xnode) {
 
 		list().add(xnode);
 
 		return xnode;
 	}
 
-	public Xnode add(Object object) {
+	public DataNode add(Object object) {
 		
-		if (object instanceof Xnode) {
-			return add((Xnode) object);
+		if (object instanceof DataNode) {
+			return add((DataNode) object);
 		} else {
-			return add(new Xleaf(this.itemName, object));
+			return add(new LeafDataNode(this.itemName, object));
 		}
 	}
 
-	public Xnode get(int index) {
+	public DataNode get(int index) {
 
 		return list().get(index);
 	}
 
-	public Xnode set(int index, Xnode xnode) {
+	public DataNode set(int index, DataNode xnode) {
 
 		if (list().size() == index) {
 			list().add(xnode);
@@ -94,16 +94,16 @@ public class Xlist extends Xnode {
 		return xnode;
 	}
 
-	public Xnode set(int index, Object object) {
+	public DataNode set(int index, Object object) {
 
-		if (object instanceof Xnode) {
-			return set(index, (Xnode) object);
+		if (object instanceof DataNode) {
+			return set(index, (DataNode) object);
 		} else {
-			return set(index, new Xleaf(this.itemName, object));
+			return set(index, new LeafDataNode(this.itemName, object));
 		}
 	}
 
-	public Xnode get(String name) {
+	public DataNode get(String name) {
 
 		if (name == itemName) {
 			return this;
@@ -112,9 +112,9 @@ public class Xlist extends Xnode {
 		}
 	}
 
-	public Xnode get(String attrName, String attrValue) {
+	public DataNode get(String attrName, String attrValue) {
 
-		for (Xnode item : list()) {
+		for (DataNode item : list()) {
 
 			if (item.getAttrValue(attrName) == attrValue) {
 				return item;
@@ -124,7 +124,7 @@ public class Xlist extends Xnode {
 		throw new RuntimeException2("[%s] %s not found in list (@%s=%s)", this.name, this.itemName, attrName, attrValue);
 	}
 
-	public Xnode set(String name, Object object) {
+	public DataNode set(String name, Object object) {
 		throw new RuntimeException2("Cannot set by name within list: %s/%s", this.name, name);
 	}
 

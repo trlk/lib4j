@@ -1,4 +1,4 @@
-package libj.xml;
+package libj.dom;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -11,44 +11,44 @@ import libj.utils.Xml;
 
 import org.w3c.dom.Node;
 
-public abstract class Xnode {
+public abstract class DataNode {
 
 	protected String name;
 	protected Object object;
 	protected HashMap<String, String> attr;
 
-	public Xnode() {
+	protected DataNode() {
 
 		attr = new HashMap<String, String>();
 	}
 
-	public Xnode(Object object) {
+	protected DataNode(Object object) {
 
 		this();
 		this.object = object;
 	}
 
-	public abstract Xnode get(String name);
+	public abstract DataNode get(String name);
 
-	public abstract Xnode get(int index);
+	public abstract DataNode get(int index);
 
-	public abstract Xnode set(String name, Object object);
+	public abstract DataNode set(String name, Object object);
 
-	public abstract Xnode set(int index, Object object);
+	public abstract DataNode set(int index, Object object);
 
-	public Xmap create(String name) {
+	public MapDataNode create(String name) {
 
-		return new Xmap(this, name);
+		return new MapDataNode(this, name);
 	}
 
-	public Xlist createList(String name) {
+	public ListDataNode createList(String name) {
 
-		return new Xlist(this, name);
+		return new ListDataNode(this, name);
 	}
 
-	public Xlist createList(String name, String itemName) {
+	public ListDataNode createList(String name, String itemName) {
 
-		return new Xlist(this, name, itemName);
+		return new ListDataNode(this, name, itemName);
 	}
 
 	public Object getObject() {

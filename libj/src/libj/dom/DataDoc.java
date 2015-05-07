@@ -1,9 +1,10 @@
-package libj.xml;
+package libj.dom;
 
 import java.util.List;
 import java.util.Map;
 
 import libj.debug.Log;
+import libj.error.RuntimeException2;
 import libj.error.Throw;
 import libj.utils.Text;
 import libj.utils.Xml;
@@ -12,31 +13,43 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class Xdoc {
+public class DataDoc {
 
-	private Xnode root;
+	private DataNode root;
 
-	public Xdoc(String rootName) {
+	public DataDoc(DataNode rootNode) {
 
-		root = new Xmap(rootName);
+		root = rootNode;
 	}
 
-	public Xdoc(String rootName, Object rootValue) {
+	public DataDoc(String rootName) {
 
-		root = new Xleaf(rootName, rootValue);
+		root = new MapDataNode(rootName);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public Xdoc(String rootName, List list) {
+	public DataDoc(String rootName, List rootList) {
 
-		root = new Xlist(rootName, list);
+		root = new ListDataNode(rootName, rootList);
 	}
 
-	public Xdoc(Document doc) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public DataDoc(String rootName, Class rootClass) throws Exception {
+
+		// check for appropriate class
+		if (!DataNode.class.isAssignableFrom(rootClass)) {
+			throw new RuntimeException2("Incompatible class: %s", rootClass.getSimpleName());
+		}
+
+		// create root
+		root = (DataNode) rootClass.getConstructor(String.class).newInstance(rootName);
+	}
+
+	public DataDoc(Document doc) {
 		parse(doc);
 	}
 
-	public Xnode getRoot() {
+	public DataNode getRoot() {
 		return root;
 	}
 
@@ -44,27 +57,27 @@ public class Xdoc {
 		return root.getName();
 	}
 
-	public Xnode get(String name) {
+	public DataNode get(String name) {
 		return root.get(name);
 	}
 
-	public Xnode get(int index) {
+	public DataNode get(int index) {
 		return root.get(index);
 	}
 
-	public Xnode set(String name, Object object) {
+	public DataNode set(String name, Object object) {
 		return root.set(name, object);
 	}
 
-	public Xnode set(int index, Object object) {
+	public DataNode set(int index, Object object) {
 		return root.set(index, object);
 	}
 
-	public Xnode root() {
+	public DataNode root() {
 		return root;
 	}
 
-	public Xnode eval(String expr) {
+	public DataNode eval(String expr) {
 
 		if (expr.charAt(0) != '/') {
 			Throw.runtimeException("Evaluation error: %s", expr);
@@ -82,7 +95,7 @@ public class Xdoc {
 			return root();
 		}
 
-		Xnode node = root();
+		DataNode node = root();
 		for (int i = 1; i < parts.length; i++) {
 
 			String name = parts[i];
@@ -100,9 +113,9 @@ public class Xdoc {
 		return node;
 	}
 
-	private Xnode parse(Node node) {
+	private DataNode parse(Node node) {
 
-		Xnode xnode = null;
+		DataNode xnode = null;
 		String name = node.getNodeName();
 
 		if (name != null) {
@@ -112,7 +125,7 @@ public class Xdoc {
 				if (!node.hasChildNodes()) {
 
 					// empty node
-					xnode = new Xleaf(name, null);
+					xnode = new LeafDataNode(name, null);
 
 				} else if (node.getChildNodes().getLength() == 1) {
 
@@ -127,16 +140,16 @@ public class Xdoc {
 						if (type != null) {
 
 							try {
-								xnode = new Xleaf(name, Class.forName(type), text);
+								xnode = new LeafDataNode(name, Class.forName(type), text);
 
 							} catch (Exception e) {
 
 								//Log.error(e);
-								xnode = new Xleaf(name, text);
+								xnode = new LeafDataNode(name, text);
 							}
 
 						} else {
-							xnode = new Xleaf(name, text);
+							xnode = new LeafDataNode(name, text);
 						}
 					}
 
@@ -165,7 +178,7 @@ public class Xdoc {
 					if (isList) {
 
 						String itemName = firstChild.getNodeName();
-						Xlist xlist = new Xlist(name, itemName);
+						ListDataNode xlist = new ListDataNode(name, itemName);
 
 						Log.debug("List detected: %s[%s]", name, itemName);
 
@@ -181,7 +194,7 @@ public class Xdoc {
 
 					} else {
 
-						Xmap xmap = new Xmap(name);
+						MapDataNode xmap = new MapDataNode(name);
 
 						for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
 
@@ -220,7 +233,7 @@ public class Xdoc {
 		parse(Xml.parse(xml));
 	}
 
-	private Node serialize(Node parent, Xnode xnode) {
+	private Node serialize(Node parent, DataNode xnode) {
 
 		Node node = null;
 
@@ -244,20 +257,20 @@ public class Xdoc {
 		node = Xml.createChild(parent, nodeName);
 
 		// parse
-		if (xnode instanceof Xmap) {
+		if (xnode instanceof MapDataNode) {
 
-			Xmap xmap = (Xmap) xnode;
+			MapDataNode xmap = (MapDataNode) xnode;
 
 			for (String name : xmap.map().keySet()) {
 
 				serialize(node, xmap.get(name));
 			}
 
-		} else if (xnode instanceof Xlist) {
+		} else if (xnode instanceof ListDataNode) {
 
-			Xlist xlist = (Xlist) xnode;
+			ListDataNode xlist = (ListDataNode) xnode;
 
-			for (Xnode item : xlist.list()) {
+			for (DataNode item : xlist.list()) {
 
 				serialize(node, item);
 			}
