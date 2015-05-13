@@ -169,8 +169,20 @@ public class TWParser {
 				// amount in words
 				String integerInWords = fmtIntegerInWords(integerObject);
 
-				if (integerInWords != null)
+				if (integerInWords != null) {
 					node.setAttribute("words", integerInWords);
+				}
+				
+			} else if (object instanceof String) {
+
+				node.setAttribute(Xml.ATTR_NAME_TYPE, String.class.getSimpleName());
+
+				String stringObject = (String) object;
+				node.setTextContent(stringObject);
+
+				// upper
+				node.setAttribute("lower", stringObject.toLowerCase());
+				node.setAttribute("upper", stringObject.toUpperCase());
 
 			} else {
 

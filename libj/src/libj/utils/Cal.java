@@ -21,6 +21,7 @@ public class Cal {
 	public static final long SECONDS_PER_DAY = SECONDS_PER_HOUR * 24;
 	public static final String DEFAULT_DATE_FORMAT = "dd.MM.yyyy";
 	public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+	public static final String DEFAULT_DATETIME_FORMAT = DEFAULT_DATE_FORMAT + Const.SPC + DEFAULT_TIME_FORMAT;
 
 	public static Date now() {
 

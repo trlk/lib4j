@@ -2,25 +2,33 @@ package libj.debug;
 
 public class Debug {
 
-	private static boolean isEnabled = false;
 	private static int THIS_IDX = 1;
 	private static int PREV_IDX = 2;
 
 	public static boolean isEnabled() {
-		return isEnabled;
+		return Log.isLevel(Log.DEBUG);
 	}
 
 	public static boolean isDisabled() {
-		return !isEnabled;
+		return !isEnabled();
 	}
 
-	public static void setDebug(boolean value) {
-
-		isEnabled = value;
+	public static void setDebug(boolean isEnabled) {
 
 		if (isEnabled) {
+
+			if (!Log.isLevel(Log.DEBUG)) {
+				Log.setLevel(Log.DEBUG);
+			}
+
 			Log.debug("Debugging is enabled");
+
 		} else {
+
+			if (Log.isLevel(Log.DEBUG)) {
+				Log.setLevel(Log.DEFAULT_LEVEL);
+			}
+
 			Log.info("Debugging is disabled");
 		}
 	}

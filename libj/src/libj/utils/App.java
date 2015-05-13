@@ -55,7 +55,7 @@ public class App {
 
 	public static String thisMethodName() {
 
-		return Debug.prevClassName();
+		return Debug.prevMethodName();
 	}
 
 	public static String thisMethodTrace() {
@@ -64,8 +64,7 @@ public class App {
 	}
 
 	public static void printHello() {
-		Log.info("[%s][%s][%s]", Cal.formatDate(Cal.now(), Cal.DEFAULT_DATE_FORMAT),
-				Cal.formatDate(Cal.now(), Cal.DEFAULT_DATE_FORMAT), App.getMainClassName());
+		Log.info("%s [%s]", Cal.formatDate(Cal.now(), Cal.DEFAULT_DATETIME_FORMAT), App.getMainClassName());
 	}
 
 	public static void printEnvInfo() {

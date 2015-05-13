@@ -281,10 +281,14 @@ public class Xml {
 		return map;
 	}
 
-	public static Map<String, String> createMap(Document doc, Boolean putEmptyNodes, char elementDelimiter,
-			char attrDelimiter) {
+	public static Map<String, String> createMap(Document doc, char elementDelimiter) {
 
-		return createMap(doc.getDocumentElement(), putEmptyNodes, elementDelimiter, attrDelimiter);
+		return createMap(doc.getDocumentElement(), PUT_EMPTY_NODES, elementDelimiter, ATTR_DELIMITER);
+	}
+
+	public static Map<String, String> createMap(Document doc, char elementDelimiter, char attrDelimiter) {
+
+		return createMap(doc.getDocumentElement(), PUT_EMPTY_NODES, elementDelimiter, attrDelimiter);
 	}
 
 	public static Map<String, String> createMap(Document doc) {

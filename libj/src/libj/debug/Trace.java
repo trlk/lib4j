@@ -6,11 +6,11 @@ public class Trace {
 
 	// constants
 	public static final int PRINT = 0;
-	public static final int HELLO = 1;
+	public static final int PING = 1;
 	public static final int BEGIN = 2;
 	public static final int END = 3;
 	public static final int LOOP = 4;
-	private static final String[] EVENT_NAMES = { "PRINT", "HELLO", "BEGIN", "END", "LOOP" };
+	private static final String[] EVENT_NAMES = { "PRINT", "PING", "BEGIN", "END", "LOOP" };
 
 	// variables
 	private static boolean isEnabled = Log.getLevel() == Log.TRACE;
@@ -56,17 +56,17 @@ public class Trace {
 		trace(PRINT, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
-	public static void hello() {
+	public static void ping() {
 
-		trace(HELLO, Debug.prevTraceElement());
+		trace(PING, Debug.prevTraceElement());
 	}
 
-	public static void hello(String text) {
-		trace(HELLO, Debug.prevTraceElement(), text);
+	public static void ping(String text) {
+		trace(PING, Debug.prevTraceElement(), text);
 	}
 
-	public static void hello(String format, Object... args) {
-		trace(HELLO, Debug.prevTraceElement(), Text.printf(format, args));
+	public static void ping(String format, Object... args) {
+		trace(PING, Debug.prevTraceElement(), Text.printf(format, args));
 	}
 
 	public static void begin() {
