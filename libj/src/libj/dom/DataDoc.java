@@ -313,4 +313,9 @@ public class DataDoc {
 		Log.print(getXML());
 	}
 
+	public String toString() {
+
+		return getXML();
+	}
+
 }

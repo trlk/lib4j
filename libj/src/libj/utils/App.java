@@ -48,16 +48,19 @@ public class App {
 		return getDefaultCharset().displayName();
 	}
 
+	@Deprecated
 	public static String thisClassName() {
 
 		return Debug.prevClassName();
 	}
 
+	@Deprecated
 	public static String thisMethodName() {
 
 		return Debug.prevMethodName();
 	}
 
+	@Deprecated
 	public static String thisMethodTrace() {
 
 		return Debug.prevMethodTrace();

@@ -1,5 +1,7 @@
 package libj.debug;
 
+import libj.utils.Text;
+
 public class Debug {
 
 	private static int THIS_IDX = 1;
@@ -41,6 +43,16 @@ public class Debug {
 		setDebug(false);
 	}
 
+	@SuppressWarnings("rawtypes")
+	public static Class thisClass() {
+
+		try {
+			return Class.forName(new Exception().getStackTrace()[THIS_IDX].getClassName());
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+
 	public static String thisClassName() {
 
 		return new Exception().getStackTrace()[THIS_IDX].getClassName();
@@ -49,6 +61,13 @@ public class Debug {
 	public static String thisMethodName() {
 
 		return new Exception().getStackTrace()[THIS_IDX].getMethodName();
+	}
+
+	public static String thisMethodFullName() {
+
+		StackTraceElement thisTrace = new Exception().getStackTrace()[THIS_IDX];
+
+		return Text.printf("%s.%s", thisTrace.getClassName(), thisTrace.getMethodName());
 	}
 
 	public static String thisMethodTrace() {
@@ -69,6 +88,16 @@ public class Debug {
 	public static int thisLineNumber() {
 
 		return new Exception().getStackTrace()[THIS_IDX].getLineNumber();
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static Class prevClass() {
+
+		try {
+			return Class.forName(new Exception().getStackTrace()[PREV_IDX].getClassName());
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
 	}
 
 	public static String prevClassName() {

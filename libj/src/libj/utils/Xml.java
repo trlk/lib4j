@@ -172,7 +172,7 @@ public class Xml {
 			return null;
 
 		if (delimiter == 0) {
-			Throw.runtimeException("%s: delimiter cannot be null", App.thisMethodName());
+			Throw.runtimeException("%s: delimiter cannot be null", Debug.thisMethodName());
 		}
 
 		String path = null;

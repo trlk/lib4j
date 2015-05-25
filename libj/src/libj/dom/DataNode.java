@@ -233,5 +233,4 @@ public abstract class DataNode {
 
 		return get(index).toBigDecimal();
 	}
-
 }
