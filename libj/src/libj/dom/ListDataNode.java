@@ -128,6 +128,10 @@ public class ListDataNode extends DataNode {
 		throw new RuntimeException2("Cannot set by name within list: %s/%s", this.name, name);
 	}
 
+	public int size() {
+		return list().size();
+	}
+
 	public void remove(int index) {
 		list().remove(index);
 	}

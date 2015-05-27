@@ -1,9 +1,10 @@
 package libj.utils;
 
 /**
+ * Text functions
+ * 
  * @author Taras Lyuklyanchuk
  * 
- * Text functions
  */
 
 import java.nio.charset.Charset;
@@ -237,6 +238,19 @@ public class Text {
 			return EMPTY_STRING;
 	}
 
+	public static String join(String arg0, String... argN) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(arg0);
+
+		for (String strN : argN) {
+			sb.append(strN);
+		}
+
+		return sb.toString();
+	}
+
 	/**
 	 * Replace the oldString by the newString in the line and returns the
 	 * result.
@@ -273,10 +287,11 @@ public class Text {
 	/**
 	 * Checks if a String is empty ("") or null.
 	 * 
-	 * StringUtils.isEmpty(null) = true StringUtils.isEmpty(&quot;&quot;) = true
-	 * StringUtils.isEmpty(&quot; &quot;) = false
-	 * StringUtils.isEmpty(&quot;bob&quot;) = false
-	 * StringUtils.isEmpty(&quot; bob &quot;) = false
+	 * isEmpty(null) = true
+	 * isEmpty("") = true
+	 * isEmpty(" ") = false
+	 * isEmpty("bob") = false
+	 * isEmpty(" bob ") = false
 	 * 
 	 * @param str
 	 *            the String to check, may be null
@@ -289,11 +304,11 @@ public class Text {
 	/**
 	 * Checks if a String is not empty ("") and not null.
 	 * 
-	 * StringUtils.isNotEmpty(null) = false
-	 * StringUtils.isNotEmpty(&quot;&quot;) = false
-	 * StringUtils.isNotEmpty(&quot; &quot;) = true
-	 * StringUtils.isNotEmpty(&quot;bob&quot;) = true
-	 * StringUtils.isNotEmpty(&quot; bob &quot;) = true
+	 * isNotEmpty(null) = false
+	 * isNotEmpty("") = false
+	 * isNotEmpty(" ") = true
+	 * isNotEmpty("bob") = true
+	 * isNotEmpty(" bob ") = true
 	 * 
 	 * @param str
 	 *            the String to check, may be null
@@ -303,4 +318,42 @@ public class Text {
 		return str != null && str.length() > 0;
 	}
 
+	public static String fill(String str, int length) {
+
+		String result = new String(str);
+
+		while (result.length() < length) {
+
+			result = result.concat(str);
+		}
+
+		return result.substring(0, length);
+	}
+
+	public static String repeat(String str, int times) {
+
+		String result = new String();
+
+		for (int i = 0; i < times; i++) {
+			result = result.concat(str);
+		}
+
+		return result;
+	}
+
+	public static String repeat(String str, String delim, int times) {
+
+		String result = new String();
+
+		for (int i = 0; i < times; i++) {
+
+			if (result.isEmpty()) {
+				result = result.concat(str);
+			} else {
+				result = result.concat(delim).concat(str);
+			}
+		}
+
+		return result;
+	}
 }

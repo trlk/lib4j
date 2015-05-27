@@ -17,8 +17,8 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import libj.db.Database;
-import libj.debug.Error;
 import libj.debug.Log;
+import libj.debug.Trace;
 import libj.error.Throw;
 import libj.jdbc.NamedStatement;
 import libj.utils.Text;
@@ -230,6 +230,8 @@ public class Oracle extends Database {
 	// commit
 	public void commit() throws SQLException {
 
+		Trace.point();
+
 		if (conn != null && !conn.isClosed()) {
 
 			conn.commit();
@@ -239,15 +241,34 @@ public class Oracle extends Database {
 	// rollback
 	public void rollback() throws SQLException {
 
+		Trace.point();
+
 		if (conn != null && !conn.isClosed()) {
 
 			conn.rollback();
 		}
 	}
 
-	// execute
+	// prepare statement
+	public PreparedStatement prepare(String sql, Object... params) throws SQLException {
+
+		Trace.point(sql, params);
+
+		PreparedStatement q = conn().prepareStatement(sql);
+
+		for (int i = 0; i < params.length; i++) {
+
+			q.setObject(i + 1, params[i]);
+		}
+
+		return q;
+	}
+
+	// execute statement
 	public void execute(PreparedStatement q) throws SQLException {
 
+		Trace.point(q.toString());
+
 		try {
 
 			q.setQueryTimeout(this.timeout);
@@ -259,9 +280,11 @@ public class Oracle extends Database {
 		}
 	}
 
-	// execute
+	// execute statement
 	public void execute(NamedStatement q) throws SQLException {
 
+		Trace.point(q.getQuery());
+
 		try {
 
 			q.setQueryTimeout(this.timeout);
@@ -273,8 +296,10 @@ public class Oracle extends Database {
 		}
 	}
 
-	// execute
+	// execute statement
 	public void execute(String sqlStatement) throws SQLException {
+
+		Trace.point(sqlStatement);
 
 		PreparedStatement q = conn.prepareStatement(sqlStatement);
 
@@ -283,6 +308,8 @@ public class Oracle extends Database {
 
 	// forced execute
 	public void enforce(PreparedStatement q) throws SQLException {
+
+		Trace.point(q.toString());
 
 		try {
 
@@ -308,6 +335,8 @@ public class Oracle extends Database {
 	// forced execute
 	public void enforce(NamedStatement q) throws SQLException {
 
+		Trace.point(q.getQuery());
+
 		try {
 
 			q.setQueryTimeout(this.timeout);
@@ -332,6 +361,8 @@ public class Oracle extends Database {
 	// alter session
 	public void alterSession(String param, String value) throws SQLException {
 
+		Trace.point(param, value);
+
 		Statement sql = conn.createStatement();
 		sql.execute(Text.printf("alter session set %s='%s'", param, value));
 	}
@@ -339,11 +370,15 @@ public class Oracle extends Database {
 	// удалить все строки таблицы
 	public void deleteTable(String table) throws SQLException {
 
+		Trace.point(table);
+
 		execute("delete from " + table);
 	}
 
 	// удалить все строки таблицы	
 	public void truncateTable(String table) throws SQLException {
+
+		Trace.point(table);
 
 		execute("truncate table " + table);
 	}
@@ -404,13 +439,15 @@ public class Oracle extends Database {
 	public void raise(SQLException e) throws SQLException {
 
 		// log
-		Error.print(e);
+		Log.error(e);
 
 		// timeout handle
 		if (e.getErrorCode() == ORA_TIMEOUT) {
 
 			e = new SQLException("Request timeout", e.getSQLState(), ORA_USER_TIMEOUT);
+
 		} else {
+
 			e = new SQLException(truncMessage(e), e.getSQLState(), e.getErrorCode());
 		}
 
@@ -421,7 +458,7 @@ public class Oracle extends Database {
 	public void raise(Exception e) throws Exception {
 
 		// log
-		Error.print(e);
+		Log.error(e);
 
 		if (e instanceof SQLException) {
 			raise((SQLException) e);
@@ -433,6 +470,8 @@ public class Oracle extends Database {
 	// executeQuery
 	public ResultSet executeQuery(String sqlStatement) throws SQLException {
 
+		Trace.point(sqlStatement);
+
 		PreparedStatement q = conn.prepareStatement(sqlStatement);
 
 		return executeQuery(q);
@@ -440,6 +479,8 @@ public class Oracle extends Database {
 
 	// executeQuery
 	public ResultSet executeQuery(PreparedStatement q) throws SQLException {
+
+		Trace.point(q.toString());
 
 		try {
 

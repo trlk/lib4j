@@ -14,7 +14,7 @@ import libj.dom.MapDataNode;
 
 public class DBUtil {
 
-	private static Map<String, Integer> getResultSetMap(ResultSet rs) throws SQLException {
+	private static Map<String, Integer> getMetadata(ResultSet rs) throws SQLException {
 
 		ResultSetMetaData rsmd = rs.getMetaData();
 
@@ -28,7 +28,7 @@ public class DBUtil {
 		return rsMap;
 	}
 
-	private static Map<String, String> getDataObjectMap(MapDataNode bo) {
+	private static Map<String, String> getMetadata(MapDataNode bo) {
 
 		// bo map
 		Map<String, String> boMap = new HashMap<String, String>();
@@ -40,13 +40,13 @@ public class DBUtil {
 		return boMap;
 	}
 
-	public static void getResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void getRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
 		// bo map
-		Map<String, String> boMap = getDataObjectMap(bo);
+		Map<String, String> boMap = getMetadata(bo);
 
 		// rs map
-		Map<String, Integer> rsMap = getResultSetMap(rs);
+		Map<String, Integer> rsMap = getMetadata(rs);
 
 		// join maps
 		for (String prop : boMap.keySet()) {
@@ -78,20 +78,20 @@ public class DBUtil {
 	}
 
 
-	public static DataNode getResultSetRow(ResultSet rs, String nodeName) throws SQLException {
+	public static DataNode getRow(ResultSet rs, String nodeName) throws SQLException {
 
 		MapDataNode bo = new MapDataNode(nodeName);
 
-		getResultSetRow(rs, bo);
+		getRow(rs, bo);
 
 		return bo;
 	}
 
-	public static void fetchResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void fetchRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
 		if (rs.next()) {
 
-			getResultSetRow(rs, bo);
+			getRow(rs, bo);
 
 		} else {
 			throw new SQLException("Fetch out of sequence");
@@ -99,36 +99,36 @@ public class DBUtil {
 	}
 
 
-	public static DataNode fetchResultSetRow(ResultSet rs, String nodeName) throws SQLException {
+	public static DataNode fetchRow(ResultSet rs, String nodeName) throws SQLException {
 
 		if (rs.next()) {
 
-			return getResultSetRow(rs, nodeName);
+			return getRow(rs, nodeName);
 
 		} else {
 			throw new SQLException("No data found");
 		}
 	}
 
-	public static ListDataNode fetchResultSetList(ResultSet rs, String listName, String nodeName) throws SQLException {
+	public static ListDataNode fetchList(ResultSet rs, String listName, String nodeName) throws SQLException {
 
 		ListDataNode boList = new ListDataNode(listName);
 
 		while (rs.next()) {
 
-			boList.add(getResultSetRow(rs, nodeName));
+			boList.add(getRow(rs, nodeName));
 		}
 
 		return boList;
 	}
 
-	public static void setResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void setRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
 		// bo map
-		Map<String, String> boMap = getDataObjectMap(bo);
+		Map<String, String> boMap = getMetadata(bo);
 
 		// rs map
-		Map<String, Integer> rsMap = getResultSetMap(rs);
+		Map<String, Integer> rsMap = getMetadata(rs);
 
 		// join maps
 		for (String prop : boMap.keySet()) {
@@ -150,36 +150,36 @@ public class DBUtil {
 		}
 	}
 
-	public static void updateResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void updateRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
-		setResultSetRow(rs, bo);
+		setRow(rs, bo);
 		rs.updateRow();
 	}
 
-	public static void insertResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void insertRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
 		rs.moveToInsertRow();
-		setResultSetRow(rs, bo);
+		setRow(rs, bo);
 		rs.insertRow();
 	}
 
-	public static void upsertResultSetRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void upsertRow(ResultSet rs, MapDataNode bo) throws SQLException {
 
 		if (rs.next()) {
 
-			updateResultSetRow(rs, bo);
+			updateRow(rs, bo);
 
 		} else {
 
-			insertResultSetRow(rs, bo);
+			insertRow(rs, bo);
 		}
 	}
 
-	public static void insertResultSetList(ResultSet rs, ListDataNode boList) throws SQLException {
+	public static void insertList(ResultSet rs, ListDataNode boList) throws SQLException {
 
 		for (DataNode row : boList.list()) {
 
-			insertResultSetRow(rs, (MapDataNode) row);
+			insertRow(rs, (MapDataNode) row);
 		}
 	}
 

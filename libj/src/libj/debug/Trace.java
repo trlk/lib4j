@@ -4,25 +4,32 @@ import libj.utils.Text;
 
 public class Trace {
 
-	// constants
-	public static final int PRINT = 0;
-	public static final int PING = 1;
-	public static final int BEGIN = 2;
-	public static final int END = 3;
-	public static final int LOOP = 4;
-	private static final String[] EVENT_NAMES = { "PRINT", "PING", "BEGIN", "END", "LOOP" };
+	// trace events
+	public static final char TEXT = 'I';
+	public static final char POINT = 'P';
+	public static final char STACK = 'S';
+	public static final char OBJECT = 'O';
+	public static final char EXCEPTION = 'E';
 
-	// variables
+	// enable flag
 	private static boolean isEnabled = Log.getLevel() == Log.TRACE;
 
 	public static void enable() {
 
 		isEnabled = true;
+		Log.setLevel(Log.TRACE);
+
+		trace(TEXT, Debug.prevTrace(), "Tracing is enabled");
 	}
 
 	public static void disable() {
 
+		trace(TEXT, Debug.prevTrace(), "Tracing is disabled");
+
 		isEnabled = false;
+		if (Log.isLevel(Log.TRACE)) {
+			Log.setLevel(Log.DEFAULT);
+		}
 	}
 
 	public static boolean isEnabled() {
@@ -31,87 +38,131 @@ public class Trace {
 	}
 
 	private static String getSource(StackTraceElement trace) {
-		return Text.printf("%s.%s:%s", trace.getClassName(), trace.getMethodName(), trace.getLineNumber());
-	}
 
-	private static void trace(int event, StackTraceElement trace) {
+		try {
 
-		if (isEnabled) {
-			Log.trace("%-5s %s", EVENT_NAMES[event], getSource(trace));
+			return Text.printf("%s.%s:%s", Class.forName(trace.getClassName()).getSimpleName(), trace.getMethodName(),
+					trace.getLineNumber());
+
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
-	private static void trace(int event, StackTraceElement trace, String text) {
+	private static void trace(char event, StackTraceElement trace, String text) {
 
 		if (isEnabled) {
-			Log.trace("%-5s %s (%s)", EVENT_NAMES[event], getSource(trace), text);
+			Log.trace(trace, Text.printf("%s %-20s %s", event, getSource(trace), text));
+		}
+	}
+
+	private static void trace(char event, StackTraceElement trace) {
+
+		if (isEnabled) {
+			trace(event, trace, Text.EMPTY_STRING);
+		}
+	}
+
+	private static void trace(char event, StackTraceElement trace, Object... args) {
+
+		if (isEnabled) {
+			String argFormat = "(" + Text.repeat("%s", ", ", args.length) + ")";
+			trace(event, trace, Text.printf(argFormat, args));
+		}
+	}
+
+	private static void tracef(char event, StackTraceElement trace, String format, Object... args) {
+
+		if (isEnabled) {
+			trace(event, trace, Text.printf(format, args));
+		}
+	}
+
+	public static void trace(char event, String text) {
+
+		if (isEnabled) {
+			trace(event, Debug.prevTrace(), text);
+		}
+	}
+
+	public static void trace(char event, Object... args) {
+
+		if (isEnabled) {
+			trace(event, Debug.prevTrace(), args);
+		}
+	}
+
+	public static void tracef(char event, String format, Object... args) {
+
+		if (isEnabled) {
+			tracef(event, Debug.prevTrace(), format, args);
 		}
 	}
 
 	public static void print(String text) {
-		trace(PRINT, Debug.prevTraceElement(), text);
+
+		if (isEnabled) {
+			trace(TEXT, Debug.prevTrace(), text);
+		}
 	}
 
-	public static void print(String format, Object... args) {
-		trace(PRINT, Debug.prevTraceElement(), Text.printf(format, args));
+	public static void printf(String format, Object... args) {
+
+		if (isEnabled) {
+			tracef(TEXT, Debug.prevTrace(), format, args);
+		}
 	}
 
-	public static void ping() {
+	public static void point() {
 
-		trace(PING, Debug.prevTraceElement());
+		if (isEnabled) {
+			trace(POINT, Debug.prevTrace());
+		}
 	}
 
-	public static void ping(String text) {
-		trace(PING, Debug.prevTraceElement(), text);
+	public static void point(Object... args) {
+
+		if (isEnabled) {
+			trace(POINT, Debug.prevTrace(), args);
+		}
 	}
 
-	public static void ping(String format, Object... args) {
-		trace(PING, Debug.prevTraceElement(), Text.printf(format, args));
+	public static void point(String text) {
+
+		if (isEnabled) {
+			trace(POINT, Debug.prevTrace(), text);
+		}
 	}
 
-	public static void begin() {
+	public static void pointf(String format, Object... args) {
 
-		trace(BEGIN, Debug.prevTraceElement());
+		tracef(POINT, Debug.prevTrace(), format, args);
 	}
 
-	public static void begin(String text) {
+	public static void stack(StackTraceElement[] stack) {
 
-		trace(BEGIN, Debug.prevTraceElement(), text);
+		trace(STACK, Debug.prevTrace(), Debug.formatStackTrace(stack));
 	}
 
-	public static void begin(String format, Object... args) {
+	public static void stack() {
 
-		trace(BEGIN, Debug.prevTraceElement(), Text.printf(format, args));
+		StackTraceElement[] stack = new Exception().getStackTrace();
+
+		trace(STACK, Debug.prevTrace(), Debug.formatStackTrace(stack, 1));
 	}
 
-	public static void end() {
+	public static void object(Object o) {
 
-		trace(END, Debug.prevTraceElement());
+		if (isEnabled) {
+			tracef(OBJECT, Debug.prevTrace(), "%s: %s", o.getClass().getSimpleName(), o.toString());
+		}
 	}
 
-	public static void end(String text) {
+	public static void exception(Throwable e) {
 
-		trace(END, Debug.prevTraceElement(), text);
-	}
-
-	public static void end(String format, Object... args) {
-
-		trace(END, Debug.prevTraceElement(), Text.printf(format, args));
-	}
-
-	public static void loop() {
-
-		trace(LOOP, Debug.prevTraceElement());
-	}
-
-	public static void loop(String text) {
-
-		trace(LOOP, Debug.prevTraceElement(), text);
-	}
-
-	public static void loop(String format, Object... args) {
-
-		trace(LOOP, Debug.prevTraceElement(), Text.printf(format, args));
+		if (isEnabled) {
+			tracef(EXCEPTION, Debug.prevTrace(), Error.getStackTrace(e));
+		}
 	}
 
 }

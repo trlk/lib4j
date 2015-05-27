@@ -57,11 +57,11 @@ public class MapDataNode extends DataNode {
 	}
 
 	public DataNode get(int index) {
-		throw new RuntimeException2("Cannot get by index from map: %s[%d]", name, index);
+		throw new RuntimeException2("Cannot get by index from map node: %s[%d]", name, index);
 	}
 
 	public DataNode set(int index, Object object) {
-		throw new RuntimeException2("Cannot set by index within map: %s[%d]", name, index);
+		throw new RuntimeException2("Cannot set by index within map node: %s[%d]", name, index);
 	}
 
 }

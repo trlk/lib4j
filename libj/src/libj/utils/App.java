@@ -8,6 +8,32 @@ import libj.debug.Log;
 
 public class App {
 
+	@Deprecated
+	public static String thisClassName() {
+
+		return Debug.prevClassName();
+	}
+
+	public static String thisClassFullName() {
+
+		return Debug.prevClassFullName();
+	}
+
+	public static String thisClassSimpleName() {
+
+		return Debug.prevClassSimpleName();
+	}
+
+	public static String thisMethodName() {
+
+		return Debug.prevMethodName();
+	}
+
+	public static String thisMethodTrace() {
+
+		return Debug.prevMethodTrace();
+	}
+
 	public static Thread getCurrentThread() {
 		return Thread.currentThread();
 	}
@@ -46,24 +72,6 @@ public class App {
 
 	public static String getDefaultCharsetName() {
 		return getDefaultCharset().displayName();
-	}
-
-	@Deprecated
-	public static String thisClassName() {
-
-		return Debug.prevClassName();
-	}
-
-	@Deprecated
-	public static String thisMethodName() {
-
-		return Debug.prevMethodName();
-	}
-
-	@Deprecated
-	public static String thisMethodTrace() {
-
-		return Debug.prevMethodTrace();
 	}
 
 	public static void printHello() {

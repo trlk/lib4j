@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import libj.utils.Bool;
 import libj.utils.Cal;
 import libj.utils.Math;
 import libj.utils.Xml;
@@ -154,6 +155,15 @@ public abstract class DataNode {
 		return Math.toBigDecimal(this.toString());
 	}
 
+	public Boolean toBoolean() {
+
+		if (object instanceof Boolean) {
+			return (Boolean) object;
+		} else {
+			return Bool.toBoolean(this.toString());
+		}
+	}
+
 	public String getString(String name) {
 
 		return get(name).toString();
@@ -233,4 +243,15 @@ public abstract class DataNode {
 
 		return get(index).toBigDecimal();
 	}
+
+	public Boolean getBoolean(String name) {
+
+		return get(name).toBoolean();
+	}
+
+	public Boolean getBoolean(int index) {
+
+		return get(index).toBoolean();
+	}
+
 }

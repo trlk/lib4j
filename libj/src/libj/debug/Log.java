@@ -26,7 +26,7 @@ public class Log implements Serializable {
 	public static final int INFO = 3;
 	public static final int DEBUG = 4;
 	public static final int TRACE = 5; // the least serious
-	public static final int DEFAULT_LEVEL = INFO;
+	public static final int DEFAULT = INFO;
 	public static final int FORMAT_NONE = 0;
 	public static final int FORMAT_BRIEF = 1;
 	public static final int FORMAT_FULL = 2;
@@ -39,7 +39,7 @@ public class Log implements Serializable {
 	private static volatile Log INSTANCE;
 
 	// private variables
-	private int level = DEFAULT_LEVEL;
+	private int level = DEFAULT;
 	private int outFormat = FORMAT_BRIEF;
 	private int fileFormat = FORMAT_FULL;
 	private String fileName;
@@ -129,11 +129,6 @@ public class Log implements Serializable {
 		}
 	}
 
-	public static boolean isLevel(int level) {
-
-		return level <= getInstance().level;
-	}
-
 	public static int getLevel() {
 
 		return getInstance().level;
@@ -147,6 +142,11 @@ public class Log implements Serializable {
 
 			info("Logging level was changed to '%s'", LEVEL_NAMES[level]);
 		}
+	}
+
+	public static boolean isLevel(int level) {
+
+		return level <= getInstance().level;
 	}
 
 	public static PrintStream getOutStream() {
@@ -218,12 +218,12 @@ public class Log implements Serializable {
 		reconf(); // apply configuration
 	}
 
-	private static void print(PrintStream stream, String line) {
+	private static void print(PrintStream stream, String text) {
 
 		if (stream != null) {
 
 			try {
-				stream.println(line);
+				stream.println(text);
 			} catch (Exception e) {
 				/*suppress*/
 			}
@@ -314,17 +314,17 @@ public class Log implements Serializable {
 
 	public static void log(int level, String text) {
 
-		log(level, Debug.prevTraceElement(), text);
+		log(level, Debug.prevTrace(), text);
 	}
 
 	public static void log(int level, Throwable e) {
 
-		log(level, Debug.prevTraceElement(), e);
+		log(level, Debug.prevTrace(), e);
 	}
 
 	public static void log(int level, String format, Object... args) {
 
-		log(level, Debug.prevTraceElement(), format, args);
+		log(level, Debug.prevTrace(), format, args);
 	}
 
 	public static void print(String text) {
@@ -344,97 +344,102 @@ public class Log implements Serializable {
 
 	public static void fatal(String text) {
 
-		log(FATAL, Debug.prevTraceElement(), text);
+		log(FATAL, Debug.prevTrace(), text);
 	}
 
 	public static void fatal(String format, Object... args) {
 
-		log(FATAL, Debug.prevTraceElement(), format, args);
+		log(FATAL, Debug.prevTrace(), format, args);
 	}
 
 	public static void fatal(Throwable e) {
 
-		log(FATAL, Debug.prevTraceElement(), e);
+		log(FATAL, Debug.prevTrace(), e);
 	}
 
 	public static void error(String text) {
 
-		log(ERROR, Debug.prevTraceElement(), text);
+		log(ERROR, Debug.prevTrace(), text);
 	}
 
 	public static void error(String format, Object... args) {
 
-		log(ERROR, Debug.prevTraceElement(), format, args);
+		log(ERROR, Debug.prevTrace(), format, args);
 	}
 
 	public static void error(Throwable e) {
 
-		log(ERROR, Debug.prevTraceElement(), e);
+		log(ERROR, Debug.prevTrace(), e);
 	}
 
 	public static void warn(String text) {
 
-		log(WARN, Debug.prevTraceElement(), text);
+		log(WARN, Debug.prevTrace(), text);
 	}
 
 	public static void warn(String format, Object... args) {
 
-		log(WARN, Debug.prevTraceElement(), format, args);
+		log(WARN, Debug.prevTrace(), format, args);
 	}
 
 	public static void warn(Throwable e) {
 
-		log(WARN, Debug.prevTraceElement(), e);
+		log(WARN, Debug.prevTrace(), e);
 	}
 
 	public static void info(String text) {
 
-		log(INFO, Debug.prevTraceElement(), text);
+		log(INFO, Debug.prevTrace(), text);
 	}
 
 	public static void info(String format, Object... args) {
 
-		log(INFO, Debug.prevTraceElement(), format, args);
+		log(INFO, Debug.prevTrace(), format, args);
 	}
 
 	public static void info(int value) {
 
-		log(INFO, Debug.prevTraceElement(), String.valueOf(value));
+		log(INFO, Debug.prevTrace(), String.valueOf(value));
 	}
 
 	public static void info(Throwable e) {
 
-		log(INFO, Debug.prevTraceElement(), e);
+		log(INFO, Debug.prevTrace(), e);
 	}
 
 	public static void debug(String text) {
 
-		log(DEBUG, Debug.prevTraceElement(), text);
+		log(DEBUG, Debug.prevTrace(), text);
 	}
 
 	public static void debug(String format, Object... args) {
 
-		log(DEBUG, Debug.prevTraceElement(), format, args);
+		log(DEBUG, Debug.prevTrace(), format, args);
 	}
 
 	public static void debug(Throwable e) {
 
-		log(DEBUG, Debug.prevTraceElement(), e);
+		log(DEBUG, Debug.prevTrace(), e);
 	}
 
 	public static void trace(String text) {
 
-		log(TRACE, Debug.prevTraceElement(), text);
+		log(TRACE, Debug.prevTrace(), text);
 	}
 
 	public static void trace(String format, Object... args) {
 
-		log(TRACE, Debug.prevTraceElement(), format, args);
+		log(TRACE, Debug.prevTrace(), format, args);
 	}
 
 	public static void trace(Throwable e) {
 
-		log(TRACE, Debug.prevTraceElement(), e);
+		log(TRACE, Debug.prevTrace(), e);
+	}
+
+	public static void trace(StackTraceElement trace, String text) {
+
+		log(TRACE, trace, text);
 	}
 
 	@SuppressWarnings("all")
