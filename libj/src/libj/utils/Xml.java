@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import libj.debug.Debug;
+import libj.debug.Stack;
 import libj.error.Throw;
 
 import org.w3c.dom.Document;
@@ -172,7 +173,7 @@ public class Xml {
 			return null;
 
 		if (delimiter == 0) {
-			Throw.runtimeException("%s: delimiter cannot be null", Debug.thisMethodName());
+			Throw.runtimeException("%s: delimiter cannot be null", Stack.thisMethodName());
 		}
 
 		String path = null;

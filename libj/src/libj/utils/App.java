@@ -3,35 +3,35 @@ package libj.utils;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import libj.debug.Debug;
 import libj.debug.Log;
+import libj.debug.Stack;
 
 public class App {
 
 	@Deprecated
 	public static String thisClassName() {
 
-		return Debug.prevClassName();
+		return Stack.prevClassName();
 	}
 
 	public static String thisClassFullName() {
 
-		return Debug.prevClassFullName();
+		return Stack.prevClassFullName();
 	}
 
 	public static String thisClassSimpleName() {
 
-		return Debug.prevClassSimpleName();
+		return Stack.prevClassSimpleName();
 	}
 
 	public static String thisMethodName() {
 
-		return Debug.prevMethodName();
+		return Stack.prevMethodName();
 	}
 
 	public static String thisMethodTrace() {
 
-		return Debug.prevMethodTrace();
+		return Stack.prevMethodTrace();
 	}
 
 	public static Thread getCurrentThread() {

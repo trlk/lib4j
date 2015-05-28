@@ -19,12 +19,12 @@ public class Trace {
 		isEnabled = true;
 		Log.setLevel(Log.TRACE);
 
-		trace(TEXT, Debug.prevTrace(), "Tracing is enabled");
+		trace(TEXT, Stack.prevTrace(), "Tracing is enabled");
 	}
 
 	public static void disable() {
 
-		trace(TEXT, Debug.prevTrace(), "Tracing is disabled");
+		trace(TEXT, Stack.prevTrace(), "Tracing is disabled");
 
 		isEnabled = false;
 		if (Log.isLevel(Log.TRACE)) {
@@ -81,87 +81,87 @@ public class Trace {
 	public static void trace(char event, String text) {
 
 		if (isEnabled) {
-			trace(event, Debug.prevTrace(), text);
+			trace(event, Stack.prevTrace(), text);
 		}
 	}
 
 	public static void trace(char event, Object... args) {
 
 		if (isEnabled) {
-			trace(event, Debug.prevTrace(), args);
+			trace(event, Stack.prevTrace(), args);
 		}
 	}
 
 	public static void tracef(char event, String format, Object... args) {
 
 		if (isEnabled) {
-			tracef(event, Debug.prevTrace(), format, args);
+			tracef(event, Stack.prevTrace(), format, args);
 		}
 	}
 
 	public static void print(String text) {
 
 		if (isEnabled) {
-			trace(TEXT, Debug.prevTrace(), text);
+			trace(TEXT, Stack.prevTrace(), text);
 		}
 	}
 
 	public static void printf(String format, Object... args) {
 
 		if (isEnabled) {
-			tracef(TEXT, Debug.prevTrace(), format, args);
+			tracef(TEXT, Stack.prevTrace(), format, args);
 		}
 	}
 
 	public static void point() {
 
 		if (isEnabled) {
-			trace(POINT, Debug.prevTrace());
+			trace(POINT, Stack.prevTrace());
 		}
 	}
 
 	public static void point(Object... args) {
 
 		if (isEnabled) {
-			trace(POINT, Debug.prevTrace(), args);
+			trace(POINT, Stack.prevTrace(), args);
 		}
 	}
 
 	public static void point(String text) {
 
 		if (isEnabled) {
-			trace(POINT, Debug.prevTrace(), text);
+			trace(POINT, Stack.prevTrace(), text);
 		}
 	}
 
 	public static void pointf(String format, Object... args) {
 
-		tracef(POINT, Debug.prevTrace(), format, args);
+		tracef(POINT, Stack.prevTrace(), format, args);
 	}
 
 	public static void stack(StackTraceElement[] stack) {
 
-		trace(STACK, Debug.prevTrace(), Debug.formatStackTrace(stack));
+		trace(STACK, Stack.prevTrace(), Stack.toString(stack));
 	}
 
 	public static void stack() {
 
 		StackTraceElement[] stack = new Exception().getStackTrace();
 
-		trace(STACK, Debug.prevTrace(), Debug.formatStackTrace(stack, 1));
+		trace(STACK, Stack.prevTrace(), Stack.toString(stack, 1));
 	}
 
 	public static void object(Object o) {
 
 		if (isEnabled) {
-			tracef(OBJECT, Debug.prevTrace(), "%s: %s", o.getClass().getSimpleName(), o.toString());
+			tracef(OBJECT, Stack.prevTrace(), "%s: %s", o.getClass().getSimpleName(), o.toString());
 		}
 	}
 
 	public static void exception(Throwable e) {
 
 		if (isEnabled) {
-			tracef(EXCEPTION, Debug.prevTrace(), Error.getStackTrace(e));
+			tracef(EXCEPTION, Stack.prevTrace(), Error.getStackTrace(e));
 		}
 	}
 
