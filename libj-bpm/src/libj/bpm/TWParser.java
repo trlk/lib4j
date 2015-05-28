@@ -12,6 +12,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import libj.debug.Debug;
 import libj.debug.Log;
+import libj.debug.Stack;
 import libj.error.Throw;
 import libj.utils.Cal;
 import libj.utils.Text;
@@ -202,7 +203,7 @@ public class TWParser {
 	public Document createDom(TWObject object) {
 
 		if (object == null)
-			Throw.runtimeException("%s: Object is null", Debug.thisMethodName());
+			Throw.runtimeException("%s: Object is null", Stack.thisMethodName());
 
 		try {
 
@@ -226,7 +227,7 @@ public class TWParser {
 	public Document createDom(TWObject object, String outRootName) {
 
 		if (object == null)
-			Throw.runtimeException("%s: Object is null", Debug.thisMethodName());
+			Throw.runtimeException("%s: Object is null", Stack.thisMethodName());
 
 		try {
 

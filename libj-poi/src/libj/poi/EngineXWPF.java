@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import libj.debug.Debug;
 import libj.debug.Log;
+import libj.debug.Stack;
 import libj.error.Throw;
 import libj.utils.Stream;
 import libj.utils.Xml;
@@ -187,7 +188,7 @@ public class EngineXWPF {
 			// print data map
 			if (Debug.isEnabled()) {
 
-				Log.debug("Data map: [%s]", Debug.thisMethodName());
+				Log.debug("Data map: [%s]", Stack.thisMethodName());
 
 				// sort data map
 				SortedSet<String> sortedKeys = new TreeSet<String>(
@@ -198,7 +199,7 @@ public class EngineXWPF {
 				}
 			}
 
-			Log.debug("Processing tags: [%s]", Debug.thisMethodName());
+			Log.debug("Processing tags: [%s]", Stack.thisMethodName());
 
 			// process all keys in template
 			for (Map.Entry<String, String> entry : map.entrySet()) {

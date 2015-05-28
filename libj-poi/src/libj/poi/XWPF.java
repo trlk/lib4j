@@ -4,8 +4,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import libj.debug.Debug;
 import libj.debug.Log;
+import libj.debug.Stack;
 import libj.error.Throw;
 
 import org.apache.poi.xwpf.converter.pdf.PdfConverter;
@@ -174,7 +174,7 @@ public class XWPF {
 	public static void createVelocityReport(InputStream templateStream,
 			InputStream dataStream, OutputStream reportStream) {
 
-		Log.info(Debug.thisMethodName());
+		Log.info(Stack.thisMethodName());
 
 		createReport(templateStream, dataStream, reportStream,
 				TemplateEngineKind.Velocity);
@@ -183,7 +183,7 @@ public class XWPF {
 	public static void createFreemarkerReport(InputStream templateStream,
 			InputStream dataStream, OutputStream reportStream) {
 
-		Log.info(Debug.thisMethodName());
+		Log.info(Stack.thisMethodName());
 
 		createReport(templateStream, dataStream, reportStream,
 				TemplateEngineKind.Freemarker);
