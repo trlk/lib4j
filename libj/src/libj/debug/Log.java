@@ -20,19 +20,19 @@ import libj.utils.Text;
 public class Log implements Serializable {
 
 	// constants
-	public static final int FATAL = 0; // the most serious
-	public static final int ERROR = 1;
-	public static final int WARN = 2;
-	public static final int INFO = 3;
-	public static final int DEBUG = 4;
-	public static final int TRACE = 5; // the least serious
+	public static final int FATAL = 1; // the most serious
+	public static final int ERROR = 2;
+	public static final int WARN = 3;
+	public static final int INFO = 4;
+	public static final int DEBUG = 5;
+	public static final int TRACE = 6; // the least serious
 	public static final int DEFAULT = INFO;
 	public static final int FORMAT_NONE = 0;
 	public static final int FORMAT_BRIEF = 1;
 	public static final int FORMAT_FULL = 2;
 	public static final int DEFAULT_FORMAT = FORMAT_BRIEF;
 
-	private static final String[] LEVEL_NAMES = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
+	private static final String[] LEVEL_NAMES = { "NONE", "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
 	private static final String loggerJNDI = Log.class.getName();
 
 	// logger instance
