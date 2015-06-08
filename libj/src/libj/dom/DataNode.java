@@ -1,16 +1,25 @@
 package libj.dom;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import libj.debug.Log;
+import libj.error.RuntimeException2;
+import libj.sdo.SDOUtils;
 import libj.utils.Bool;
 import libj.utils.Cal;
 import libj.utils.Math;
 import libj.utils.Xml;
 
 import org.w3c.dom.Node;
+
+import commonj.sdo.DataObject;
+import commonj.sdo.Property;
+import commonj.sdo.Type;
 
 public abstract class DataNode {
 
@@ -29,6 +38,12 @@ public abstract class DataNode {
 		this.object = object;
 	}
 
+	public abstract int size();
+
+	public abstract boolean isList();
+
+	public abstract boolean isHave(String name);
+
 	public abstract DataNode get(String name);
 
 	public abstract DataNode get(int index);
@@ -37,7 +52,20 @@ public abstract class DataNode {
 
 	public abstract DataNode set(int index, Object object);
 
-	public MapDataNode create(String name) {
+	public abstract void remove(String name);
+
+	public abstract void remove(int index);
+
+	public DataNode create(String name) {
+
+		if (isHave(name)) {
+			return this.get(name);
+		} else {
+			return createMap(name);
+		}
+	}
+
+	public MapDataNode createMap(String name) {
 
 		return new MapDataNode(this, name);
 	}
@@ -45,11 +73,6 @@ public abstract class DataNode {
 	public ListDataNode createList(String name) {
 
 		return new ListDataNode(this, name);
-	}
-
-	public ListDataNode createList(String name, String itemName) {
-
-		return new ListDataNode(this, name, itemName);
 	}
 
 	public Object getObject() {
@@ -252,6 +275,76 @@ public abstract class DataNode {
 	public Boolean getBoolean(int index) {
 
 		return get(index).toBoolean();
+	}
+
+	public void print() {
+		Log.print("%s=%s", this.name, toString());
+	}
+
+	protected DataNode throwNotApplicable(String methodName) {
+		throw new RuntimeException2("Method is not applicable here: %s.%s", this.getClass().getSimpleName(), methodName);
+	}
+
+	public void toDataObject(DataObject bo) {
+
+		Type type = bo.getType();
+		Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
+
+		Log.trace("### %s: %s (%s) ###", this.getClass().getSimpleName(), this.getName(), type.getName());
+
+		for (String propName : propMap.keySet()) {
+
+			Property prop = propMap.get(propName);
+			//Type propType = prop.getType();
+			boolean isList = prop.isMany();
+			boolean isContainer = prop.isContainment();
+
+			Log.trace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+
+			if (this.isHave(propName)) {
+
+				DataNode childNode = this.get(propName);
+
+				if (isContainer) {
+
+					if (isList) {
+
+						List<DataObject> list = new ArrayList<DataObject>();
+
+						if (childNode.isList()) {
+
+							for (int i = 0; i < childNode.size(); i++) {
+
+								DataObject listItem = bo.createDataObject(propName);
+								childNode.get(i).toDataObject(listItem);
+								list.add(listItem);
+							}
+
+						} else {
+
+							DataObject listItem = bo.createDataObject(propName);
+							childNode.toDataObject(listItem);
+							list.add(listItem);
+						}
+
+						bo.setList(propName, list);
+
+					} else if (childNode instanceof MapDataNode) {
+
+						childNode.toDataObject(bo.createDataObject(propName));
+
+					} else {
+						Log.debug("Could not link node: %s <-> %s", propName, this.getClass().getName());
+					}
+
+				} else {
+
+					// not container
+					bo.set(propName, childNode.getObject());
+				}
+			}
+		}
+
 	}
 
 }

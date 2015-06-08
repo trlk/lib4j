@@ -3,11 +3,10 @@ package libj.dom;
 import java.util.ArrayList;
 import java.util.List;
 
+import libj.debug.Stack;
 import libj.error.RuntimeException2;
 
 public class ListDataNode extends DataNode {
-
-	private String itemName = "item";
 
 	private ListDataNode() {
 
@@ -20,22 +19,21 @@ public class ListDataNode extends DataNode {
 		setName(name);
 	}
 
-	public ListDataNode(String name, String itemName) {
-
-		this(name);
-		setItemName(itemName);
-	}
-
 	public ListDataNode(DataNode parent, String name) {
 
 		this(name);
 		parent.set(name, this);
 	}
 
-	public ListDataNode(DataNode parent, String name, String itemName) {
+	public ListDataNode(DataNode dataNode) {
 
-		this(name, itemName);
-		parent.set(name, this);
+		this(dataNode.name);
+
+		if (dataNode.isList()) {
+			throwNotApplicable(Stack.thisMethodName());
+		} else {
+			add(dataNode);
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -48,33 +46,38 @@ public class ListDataNode extends DataNode {
 		}
 	}
 
-	public String getItemName() {
-		return itemName;
-	}
-
-	public void setItemName(String itemName) {
-		this.itemName = itemName;
-	}
-
 	@SuppressWarnings("unchecked")
 	public List<DataNode> list() {
 
 		return (List<DataNode>) this.getObject();
 	}
 
-	public DataNode add(DataNode xnode) {
+	public int size() {
+		return list().size();
+	}
 
-		list().add(xnode);
+	public boolean isList() {
+		return true;
+	}
 
-		return xnode;
+	public boolean isHave(String name) {
+		throwNotApplicable(Stack.thisMethodName());
+		return false;
+	}
+
+	public DataNode add(DataNode dataNode) {
+
+		list().add(dataNode);
+
+		return dataNode;
 	}
 
 	public DataNode add(Object object) {
-		
+
 		if (object instanceof DataNode) {
 			return add((DataNode) object);
 		} else {
-			return add(new LeafDataNode(this.itemName, object));
+			return add(new LeafDataNode(this.name, object));
 		}
 	}
 
@@ -83,32 +86,12 @@ public class ListDataNode extends DataNode {
 		return list().get(index);
 	}
 
-	public DataNode set(int index, DataNode xnode) {
-
-		if (list().size() == index) {
-			list().add(xnode);
-		} else {
-			list().set(index, xnode);
-		}
-
-		return xnode;
-	}
-
-	public DataNode set(int index, Object object) {
-
-		if (object instanceof DataNode) {
-			return set(index, (DataNode) object);
-		} else {
-			return set(index, new LeafDataNode(this.itemName, object));
-		}
-	}
-
 	public DataNode get(String name) {
 
-		if (name == itemName) {
+		if (name == this.name) {
 			return this;
 		} else {
-			throw new RuntimeException2("Cannot get by name from list: %s/%s", this.name, name);
+			return throwNotApplicable(Stack.thisMethodName());
 		}
 	}
 
@@ -121,19 +104,39 @@ public class ListDataNode extends DataNode {
 			}
 		}
 
-		throw new RuntimeException2("[%s] %s not found in list (@%s=%s)", this.name, this.itemName, attrName, attrValue);
+		throw new RuntimeException2("Attribute not found: %s@%s=%s", this.name, attrName, attrValue);
+	}
+
+	public DataNode set(int index, DataNode dataNode) {
+
+		if (list().size() == index) {
+			list().add(dataNode);
+		} else {
+			list().set(index, dataNode);
+		}
+
+		return dataNode;
+	}
+
+	public DataNode set(int index, Object object) {
+
+		if (object instanceof DataNode) {
+			return set(index, (DataNode) object);
+		} else {
+			return set(index, new LeafDataNode(this.name, object));
+		}
 	}
 
 	public DataNode set(String name, Object object) {
-		throw new RuntimeException2("Cannot set by name within list: %s/%s", this.name, name);
-	}
-
-	public int size() {
-		return list().size();
+		return throwNotApplicable(Stack.thisMethodName());
 	}
 
 	public void remove(int index) {
 		list().remove(index);
+	}
+
+	public void remove(String name) {
+		throwNotApplicable(Stack.thisMethodName());
 	}
 
 }

@@ -1,15 +1,15 @@
 package libj.dom;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
+import spring.util.LinkedCaseInsensitiveMap;
 import libj.error.RuntimeException2;
-import libj.error.Throw;
 
 public class MapDataNode extends DataNode {
 
 	private MapDataNode() {
 
-		super(new HashMap<String, DataNode>());
+		super(new LinkedCaseInsensitiveMap<DataNode>());
 	}
 
 	public MapDataNode(String name) {
@@ -25,26 +25,67 @@ public class MapDataNode extends DataNode {
 	}
 
 	@SuppressWarnings("unchecked")
-	public HashMap<String, DataNode> map() {
+	public LinkedHashMap<String, DataNode> map() {
 
-		return (HashMap<String, DataNode>) this.getObject();
+		return (LinkedHashMap<String, DataNode>) this.getObject();
 	}
 
-	@Override
+	public int size() {
+		return map().size();
+	}
+
+	public boolean isList() {
+		return false;
+	}
+
+	public boolean isHave(String name) {
+		return map().containsKey(name);
+	}
+
+	public String nameOf(int index) {
+
+		if (index >= 0 && index < size()) {
+
+			String[] keyArray = map().keySet().toArray(new String[0]);
+			return keyArray[index];
+		}
+
+		throw new RuntimeException2("Index out of bound: %s[%s]", this.name, index);
+	}
+
+	public int indexOf(String name) {
+
+		int i = 0;
+		for (String keyName : map().keySet()) {
+
+			if (keyName.equalsIgnoreCase(name)) {
+				return i;
+			}
+
+			i++;
+		}
+
+		throw new RuntimeException2("Node not found: %s/%s", this.name, name);
+	}
+
 	public DataNode get(String name) {
 
-		if (!map().containsKey(name)) {
-			Throw.runtimeException("[%s/%s] Node not found", this.name, name);
+		if (!isHave(name)) {
+			throw new RuntimeException2("Node not found: %s/%s", this.name, name);
 		}
 
 		return map().get(name);
 	}
 
-	public DataNode set(String name, DataNode xnode) {
+	public DataNode get(int index) {
+		return get(nameOf(index));
+	}
 
-		map().put(name, xnode);
+	public DataNode set(String name, DataNode dataNode) {
 
-		return xnode;
+		map().put(name, dataNode);
+
+		return dataNode;
 	}
 
 	public DataNode set(String name, Object object) {
@@ -56,12 +97,21 @@ public class MapDataNode extends DataNode {
 		}
 	}
 
-	public DataNode get(int index) {
-		throw new RuntimeException2("Cannot get by index from map node: %s[%d]", name, index);
+	public DataNode set(int index, Object object) {
+		return set(nameOf(index), object);
 	}
 
-	public DataNode set(int index, Object object) {
-		throw new RuntimeException2("Cannot set by index within map node: %s[%d]", name, index);
+	public void remove(String name) {
+
+		if (!isHave(name)) {
+			throw new RuntimeException2("Node not found: %s/%s", this.name, name);
+		}
+
+		map().remove(name);
+	}
+
+	public void remove(int index) {
+		remove(nameOf(index));
 	}
 
 }
