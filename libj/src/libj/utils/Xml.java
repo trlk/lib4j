@@ -28,8 +28,10 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import libj.debug.Debug;
+import libj.debug.Log;
 import libj.debug.Stack;
 import libj.error.Throw;
+import libj.xml.XMLSchema;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -53,17 +55,23 @@ public class Xml {
 	public static boolean PUT_EMPTY_NODES = Debug.isEnabled();
 
 	// constants
-	public static char XPATH_DELIMITER = '/';
-	public static final String ATTR_NAME_TYPE = "type";
-	public static final String ATTR_NAME_INDEX = "index";
+	public static final String TAG_TYPE = "type";
 	public static final String TAG_NAME_ITEM = "item";
 	public static final String TAG_NAME_ITEMS = "items";
+	public static final String ATTR_NAME_TYPE = "type";
+	public static final String ATTR_NAME_INDEX = "index";
 	public static final int INDENT_LENGTH = 2;
+	public static final char COMMA_DELIMITER = '.';
+	public static final char XPATH_DELIMITER = '/';
 
 	// xml date/time format
 	public static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static final String TIME_FORMAT = "HH:mm:ss";
 	public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+
+	// boolean
+	public static final String XML_TRUE = Bool.TRUE.toString();
+	public static final String XML_FALSE = Bool.FALSE.toString();
 
 	public static Document parse(InputStream inputStream) {
 
@@ -169,53 +177,65 @@ public class Xml {
 
 	public static String getNodePath(Node node, char delimiter) {
 
-		if (node == null)
-			return null;
+		if (node != null) {
 
-		if (delimiter == 0) {
-			Throw.runtimeException("%s: delimiter cannot be null", Stack.thisMethodName());
-		}
+			if (delimiter == 0) {
+				Throw.runtimeException("%s: delimiter cannot be a null", Stack.thisMethodName());
+			}
 
-		String path = null;
+			Node endNode;
 
-		for (Node n = node; n != null; n = n.getParentNode()) {
+			if (delimiter == COMMA_DELIMITER) {
+				endNode = getRootNode(node);
+			} else {
+				endNode = null;
+			}
 
-			if (n.getNodeType() == Node.ELEMENT_NODE) {
+			String path = null;
 
-				String nodeName = n.getNodeName();
+			for (Node n = node; n != endNode; n = n.getParentNode()) {
 
-				// truncate namespace prefix
-				String[] nameParts = nodeName.split(":");
+				if (n.getNodeType() == Node.ELEMENT_NODE) {
 
-				if (nameParts.length == 2) {
-					nodeName = nameParts[1];
-				}
+					String nodeName = n.getNodeName();
 
-				// list
-				if (nodeName == TAG_NAME_ITEM) {
+					// truncate namespace prefix
+					String[] nameParts = nodeName.split(":");
 
-					// index attribute
-					String nodeIndex = getAttrValue(n, ATTR_NAME_INDEX);
+					if (nameParts.length == 2) {
+						nodeName = nameParts[1];
+					}
 
-					if (nodeIndex != null) {
-						nodeName = Text.printf("%s[%s]", nodeName, nodeIndex);
+					// list
+					if (nodeName == TAG_NAME_ITEM) {
+
+						// index attribute
+						String nodeIndex = getAttrValue(n, ATTR_NAME_INDEX);
+
+						if (nodeIndex != null) {
+							nodeName = Text.printf("%s[%s]", nodeName, nodeIndex);
+						}
+					}
+
+					// build path
+					if (path == null) {
+						path = nodeName;
+					} else {
+						path = nodeName + delimiter + path;
 					}
 				}
-
-				// build path
-				if (path == null) {
-					path = nodeName;
-				} else {
-					path = nodeName + delimiter + path;
-				}
 			}
+
+			if (delimiter == XPATH_DELIMITER) {
+				path = delimiter + path;
+			}
+
+			return path;
+
+		} else {
+			return null;
 		}
 
-		if (delimiter == XPATH_DELIMITER) {
-			path = delimiter + path;
-		}
-
-		return path;
 	}
 
 	public static String getNodePath(Node node) {
@@ -226,6 +246,87 @@ public class Xml {
 	public static String getNodeXPath(Node node) {
 
 		return getNodePath(node, XPATH_DELIMITER);
+	}
+
+	public static String getPrintedText(Object value) {
+
+		if (value instanceof Date) {
+
+			Date d = (Date) value;
+
+			if (Cal.trunc(d).equals(d)) {
+				return Cal.formatDate(d, Cal.DEFAULT_DATE_FORMAT);
+			} else {
+				return Cal.formatDate(d, Cal.DEFAULT_DATETIME_FORMAT);
+			}
+
+		} else if (value instanceof Float) {
+
+			return String.format("%.2f", (Float) value);
+
+		} else if (value instanceof Double) {
+
+			return String.format("%.2d", (Double) value);
+
+		} else if (value instanceof BigDecimal) {
+
+			return String.format("%.2d", Math.toDouble((BigDecimal) value));
+
+		} else {
+
+			return value.toString();
+		}
+
+	}
+
+	public static Boolean toBool(String value) {
+
+		if (value.equalsIgnoreCase(XML_TRUE)) {
+			return true;
+		} else if (value.equals(Bool.INT_TRUE)) {
+			return true;
+		} else if (value.equalsIgnoreCase(XML_FALSE)) {
+			return false;
+		} else if (value.equals(Bool.INT_FALSE)) {
+			return false;
+		}
+
+		return null;
+	}
+
+	public static Date toDate(String value, String format) {
+
+		return Cal.toDate(value, format);
+	}
+
+	public static Date toDate(String value) {
+
+		return toDate(value, DATE_FORMAT);
+	}
+
+	public static Date toDateTime(String value) {
+
+		return toDate(value, DATETIME_FORMAT);
+	}
+
+	public static Date toDateTime(String value, String format) {
+
+		return toDate(value, format);
+	}
+
+	public static Float toFloat(String value) {
+
+		return Math.toFloat(value);
+	}
+
+	public static Double toDouble(String value) {
+
+		return Math.toDouble(value);
+	}
+
+	public static Integer toInteger(String value) {
+
+		return Math.toInteger(value);
 	}
 
 	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
@@ -259,12 +360,33 @@ public class Xml {
 								for (int i = 0; i < attrs.getLength(); i++) {
 
 									Node attr = attrs.item(i);
+									String attrName = attr.getNodeName();
+									String attrValue = attr.getNodeValue();
 
-									String attrPath = path + attrDelimiter + attr.getNodeName();
+									map.put(path + attrDelimiter + attrName, attrValue);
 
-									map.put(attrPath, attr.getNodeValue());
+									// printed date
+									if (attrName.equals(Xml.TAG_TYPE)) {
+
+										Object object;
+
+										try {
+											object = XMLSchema.createObejct(attrValue, text);
+										} catch (Exception e) {
+											Log.warn(e.getMessage());
+											object = text;
+										}
+
+										String printedText = getPrintedText(object);
+
+										if (!printedText.equals(text)) {
+											map.put(path + attrDelimiter + "text", printedText);
+										}
+									}
 								}
 							}
+
+							map.put(path, text);
 						}
 					}
 
@@ -412,11 +534,21 @@ public class Xml {
 		return createChild(doc, rootName);
 	}
 
-	public static Node getRoot(Document doc) {
+	public static Node getRootNode(Document doc) {
+
 		return doc.getDocumentElement();
 	}
 
-	public static Node getChild(Node parentNode, String childName) {
+	public static Node getRootNode(Node node) {
+
+		if (node != null) {
+			return getRootNode(node.getOwnerDocument());
+		} else {
+			return null;
+		}
+	}
+
+	public static Node getChildNode(Node parentNode, String childName) {
 
 		return extractNode(parentNode, childName);
 	}
@@ -510,7 +642,7 @@ public class Xml {
 
 		} else if (nodes.getLength() > 1) {
 
-			Throw.runtimeException("More then one nodes found");
+			Throw.runtimeException("More then one node found");
 		}
 
 		return nodes.item(0);
@@ -525,10 +657,11 @@ public class Xml {
 
 		Node textNode = extractNode(node, xpath);
 
-		if (textNode != null)
+		if (textNode != null) {
 			return textNode.getTextContent();
-		else
+		} else {
 			return defaultText;
+		}
 	}
 
 	public static String getText(Node node, String xpath) {
@@ -560,16 +693,15 @@ public class Xml {
 
 		String value = getString(node, xpath);
 
-		String trueText = ((Boolean) true).toString();
-		String falseText = ((Boolean) false).toString();
-
 		try {
 
-			if (value.equalsIgnoreCase(trueText))
+			if (value.equalsIgnoreCase(XML_TRUE)) {
 				return true;
+			}
 
-			if (value.equalsIgnoreCase(falseText))
+			if (value.equalsIgnoreCase(XML_FALSE)) {
 				return false;
+			}
 
 			// threat as integer
 			return new Integer(value) != 0;

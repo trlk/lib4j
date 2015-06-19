@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import libj.debug.Log;
-import libj.dom.DataDoc;
-import libj.dom.DataNode;
-import libj.dom.ListDataNode;
-import libj.dom.MapDataNode;
+import libj.dom.XDataNode;
+import libj.dom.XDocument;
+import libj.dom.XListNode;
+import libj.dom.XMapNode;
 import libj.utils.Text;
 import commonj.sdo.DataObject;
 import commonj.sdo.Property;
@@ -78,54 +78,62 @@ public class SDOUtils {
 		return dataObject.createDataObject(property);
 	}
 
-	private static void convertToDataDoc(DataObject bo, DataNode node) {
+	private static void convertToDataNode(DataObject bo, XDataNode node) {
 
-		Log.trace("### Node: %s ###", node.getName());
+		if (bo == null || node == null) {
 
-		Type type = bo.getType();
-		Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
+			Log.trace("Argument is null, skipped...");
 
-		for (String propName : propMap.keySet()) {
+		} else {
 
-			Property prop = propMap.get(propName);
-			// Type propType = prop.getType();
-			boolean isList = prop.isMany();
-			boolean isContainer = prop.isContainment();
+			Log.trace("### Node: %s ###", node.getName());
 
-			Log.trace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+			Type type = bo.getType();
+			Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
 
-			if (isList) {
+			for (String propName : propMap.keySet()) {
 
-				@SuppressWarnings("unchecked")
-				List<DataObject> list = bo.getList(propName);
-				ListDataNode listNode = node.createList(propName);
+				Property prop = propMap.get(propName);
+				// Type propType = prop.getType();
 
-				for (DataObject o : list) {
+				boolean isList = prop.isMany();
+				boolean isContainer = prop.isContainment();
 
-					DataNode itemNode = new MapDataNode(propName);
-					listNode.add(itemNode);
-					convertToDataDoc(o, itemNode);
+				Log.trace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+
+				if (isList) {
+
+					@SuppressWarnings("unchecked")
+					List<DataObject> list = bo.getList(propName);
+					XListNode listNode = node.createList(propName);
+
+					for (DataObject o : list) {
+
+						XDataNode itemNode = new XMapNode(listNode, propName);
+						listNode.add(itemNode);
+						convertToDataNode(o, itemNode);
+					}
+
+				} else if (isContainer) {
+
+					XDataNode childNode = node.create(propName);
+					convertToDataNode(bo.getDataObject(propName), childNode);
+
+				} else {
+
+					node.set(propName, bo.get(propName));
 				}
-
-			} else if (isContainer) {
-
-				DataNode childNode = node.create(propName);
-				convertToDataDoc(bo.getDataObject(propName), childNode);
-
-			} else {
-
-				node.set(propName, bo.get(propName));
 			}
 		}
 	}
 
-	public static DataDoc convertToDataDoc(DataObject dataObject) {
+	public static XDocument convertToDocument(DataObject dataObject) {
 
-		DataDoc dataDoc = new DataDoc(dataObject.getType().getName());
+		XDocument document = new XDocument(dataObject.getType().getName());
 
-		convertToDataDoc(dataObject, dataDoc.getRoot());
+		convertToDataNode(dataObject, document.getRoot());
 
-		return dataDoc;
+		return document;
 	}
 
 }

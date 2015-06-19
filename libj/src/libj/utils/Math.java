@@ -178,27 +178,46 @@ public class Math {
 		}
 	}
 
-	public static BigDecimal toBigDecimal(float amount, int scale) {
+	public static BigDecimal toBigDecimal(float value, int scale) {
 
-		BigDecimal bdAmount = new BigDecimal(amount);
+		BigDecimal bdValue = new BigDecimal(value);
+
+		return bdValue.setScale(scale, BigDecimal.ROUND_HALF_UP);
+	}
+
+	public static BigDecimal toBigDecimal(float value) {
+
+		return toBigDecimal(value, DEFAULT_SCALE);
+	}
+
+	public static BigDecimal toBigDecimal(double value, int scale) {
+
+		BigDecimal bdAmount = new BigDecimal(value);
 
 		return bdAmount.setScale(scale, BigDecimal.ROUND_HALF_UP);
 	}
 
-	public static BigDecimal toBigDecimal(float amount) {
+	public static BigDecimal toBigDecimal(double value) {
 
-		return toBigDecimal(amount, DEFAULT_SCALE);
+		return toBigDecimal(value, DEFAULT_SCALE);
 	}
 
-	public static BigDecimal toBigDecimal(double amount, int scale) {
+	public static String format(float value) {
 
-		BigDecimal bdAmount = new BigDecimal(amount);
-
-		return bdAmount.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		if (value == (long) value) {
+			return String.format("%d", (long) value);
+		} else {
+			return String.format("%s", value);
+		}
 	}
 
-	public static BigDecimal toBigDecimal(double amount) {
+	public static String format(double value) {
 
-		return toBigDecimal(amount, DEFAULT_SCALE);
+		if (value == (long) value) {
+			return String.format("%d", (long) value);
+		} else {
+			return String.format("%s", value);
+		}
 	}
+
 }

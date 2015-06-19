@@ -2,16 +2,15 @@ package libj.dom;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import libj.debug.Log;
-import libj.debug.Stack;
 import libj.debug.Trace;
 import libj.error.RuntimeException2;
 import libj.error.Throw;
 import libj.utils.Stream;
 import libj.utils.Text;
 import libj.utils.Xml;
+import libj.xml.XMLSchema;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -19,78 +18,103 @@ import org.w3c.dom.Node;
 
 import commonj.sdo.DataObject;
 
-public class DataDoc {
+public class XDocument extends XNode {
 
-	protected DataNode root;
+	private XDataNode root;
 
-	public DataDoc(DataNode rootNode) {
+	public XDocument(XDataNode rootNode) {
 
-		root = rootNode;
+		setRoot(rootNode);
 	}
 
-	public DataDoc(String rootName) {
+	public XDocument(String rootName) {
 
-		root = new MapDataNode(rootName);
+		setRoot(new XMapNode(this, rootName));
 	}
 
-	public DataDoc(Document doc) {
+	public XDocument(Document doc) {
 
 		parse(doc);
 	}
 
-	public DataDoc(byte[] xmlBytes) {
+	public XDocument(byte[] xmlBytes) {
 
 		parse(xmlBytes);
 	}
 
-	public DataDoc(InputStream xmlStream) {
+	public XDocument(InputStream xmlStream) {
 
 		parse(xmlStream);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public DataDoc(String rootName, List rootList) {
+	public XDocument(String rootName, List rootList) {
 
-		root = new ListDataNode(rootName, rootList);
+		setRoot(new XListNode(this, rootName, rootList));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public DataDoc(String rootName, Class rootClass) throws Exception {
+	public XDocument(String rootName, Class rootClass) throws Exception {
 
 		// check for appropriate class
-		if (!DataNode.class.isAssignableFrom(rootClass)) {
+		if (!XDataNode.class.isAssignableFrom(rootClass)) {
 			throw new RuntimeException2("Incompatible class: %s", rootClass.getSimpleName());
 		}
 
 		// create root
-		root = (DataNode) rootClass.getConstructor(String.class).newInstance(rootName);
+		setRoot((XDataNode) rootClass.getConstructor(String.class).newInstance(rootName));
 	}
 
-	public DataNode getRoot() {
+	@Override
+	public XDocument clone() throws CloneNotSupportedException {
+
+		XDocument clone = (XDocument) super.clone();
+
+		clone.setRoot(this.root.clone());
+
+		return clone;
+	}
+
+	public XDataNode root() {
+		return getRoot();
+	}
+
+	public XDataNode getRoot() {
 		return root;
 	}
 
+	public void setRoot(XDataNode rootNode) {
+
+		root = rootNode;
+		root.setParent(this);
+	}
+
 	public String getRootName() {
+
 		return root.getName();
 	}
 
-	public DataNode get(String name) {
+	public XDataNode get(String name) {
+
 		return root.get(name);
 	}
 
-	public DataNode get(int index) {
+	public XDataNode get(int index) {
+
 		return root.get(index);
 	}
 
-	public DataNode set(String name, Object object) {
+	public XDataNode set(String name, Object object) {
+
 		return root.set(name, object);
 	}
 
-	public DataNode set(int index, Object object) {
+	public XDataNode set(int index, Object object) {
+
 		return root.set(index, object);
 	}
 
-	public DataNode eval(String expr) {
+	public XDataNode eval(String expr) {
 
 		if (expr.charAt(0) != '/') {
 			Throw.runtimeException("Evaluation error: %s", expr);
@@ -108,7 +132,7 @@ public class DataDoc {
 			return this.root;
 		}
 
-		DataNode node = this.root;
+		XDataNode node = this.root;
 		for (int i = 1; i < parts.length; i++) {
 
 			String name = parts[i];
@@ -126,75 +150,13 @@ public class DataDoc {
 		return node;
 	}
 
-	private void serialize(DataNode dataNode, Node target) {
+	private XDataNode parse(XNode parent, Node node) {
 
-		if (dataNode == null || target == null) {
-			throw new RuntimeException2("Invalid arguments for %s()", Stack.thisMethodName());
-		}
-
-		String nodeName = dataNode.getName();
-
-		if (nodeName == null || nodeName.isEmpty()) {
-			throw new RuntimeException2("Node name can't be empty: %s (%s)", target.getNodeName(), dataNode.getType());
-		}
-
-		// parse
-		if (dataNode instanceof MapDataNode) {
-
-			for (String childName : ((MapDataNode) dataNode).map().keySet()) {
-
-				DataNode childNode = dataNode.get(childName);
-
-				if (childNode.isList()) {
-					serialize(childNode, target);
-				} else {
-					serialize(childNode, Xml.createChild(target, childName));
-				}
-			}
-
-		} else if (dataNode instanceof ListDataNode) {
-
-			ListDataNode listNode = (ListDataNode) dataNode;
-
-			for (DataNode item : listNode.list()) {
-
-				serialize(item, Xml.createChild(target, nodeName));
-			}
-
-		} else {
-
-			Xml.setObject(target, dataNode.getObject());
-			Xml.setAttrValue(target, "type", dataNode.getType());
-		}
-
-		// attributes
-		if (dataNode.hasAttributes()) {
-
-			Map<String, String> attr = dataNode.getAttributes();
-
-			for (String attrName : attr.keySet()) {
-
-				Xml.setAttrValue(target, attrName, attr.get(attrName));
-			}
-		}
-	}
-
-	public Document serialize() {
-
-		Document doc = Xml.createDocument();
-		Node rootNode = Xml.createChild(doc, root.getName());
-		serialize(root, rootNode);
-
-		return doc;
-	}
-
-	private DataNode parse(Node node) {
-
-		DataNode dataNode = null;
+		XDataNode dataNode = null;
 		String nodeName = node.getNodeName();
 
-		if (Trace.isEnabled()) {
-			Trace.point(Xml.getNodeXPath(node));
+		if (Trace.isEnabled() && node != null) {
+			Trace.point(Text.printf("%s=%s", Xml.getNodeXPath(node), node.toString()));
 		}
 
 		if (Text.isNotEmpty(nodeName)) {
@@ -204,7 +166,7 @@ public class DataDoc {
 				if (!node.hasChildNodes()) {
 
 					// empty node
-					dataNode = new LeafDataNode(nodeName, null);
+					dataNode = new XLeafNode(parent, nodeName, null);
 
 				} else if (node.getChildNodes().getLength() == 1
 						&& node.getFirstChild().getNodeType() == Node.TEXT_NODE) {
@@ -213,27 +175,28 @@ public class DataDoc {
 					Node textNode = node.getFirstChild();
 
 					String text = textNode.getTextContent().trim();
-					String type = Xml.getAttrValue(textNode.getParentNode(), "type");
+					String type = Xml.getAttrValue(textNode.getParentNode(), Xml.TAG_TYPE);
 
 					if (type != null) {
 
 						try {
-							dataNode = new LeafDataNode(nodeName, Class.forName(type), text);
+
+							dataNode = new XLeafNode(parent, nodeName, XMLSchema.getClass(type), text);
 
 						} catch (Exception e) {
 
 							//Log.error(e);
-							dataNode = new LeafDataNode(nodeName, text);
+							dataNode = new XLeafNode(parent, nodeName, text);
 						}
 
 					} else {
-						dataNode = new LeafDataNode(nodeName, text);
+						dataNode = new XLeafNode(parent, nodeName, text);
 					}
 				}
 
 				else {
 
-					dataNode = new MapDataNode(nodeName);
+					dataNode = new XMapNode(parent, nodeName);
 
 					for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
 
@@ -241,29 +204,29 @@ public class DataDoc {
 
 						if (child.getNodeType() == Node.ELEMENT_NODE) {
 
-							boolean isList = dataNode.isHave(childName);
+							boolean isList = dataNode.isHas(childName);
 
 							if (isList) {
 
 								Log.trace("List detected: %s/%s[]", nodeName, childName);
 
-								DataNode childNode = dataNode.get(childName);
+								XDataNode childNode = dataNode.get(childName);
 
 								if (childNode.isList()) {
 
 									// add
-									childNode.set(childNode.size(), parse(child));
+									childNode.set(childNode.size(), parse(childNode, child));
 
 								} else {
 
 									// convert to list
-									ListDataNode listNode = new ListDataNode(childNode);
+									XListNode listNode = new XListNode(parent, childNode);
 									dataNode.set(childName, listNode);
-									listNode.add(parse(child));
+									listNode.add(parse(listNode, child));
 								}
 
 							} else {
-								dataNode.set(childName, parse(child));
+								dataNode.set(childName, parse(dataNode, child));
 							}
 						}
 					}
@@ -286,7 +249,7 @@ public class DataDoc {
 
 	public void parse(Document doc) {
 
-		this.root = parse(Xml.getRoot(doc));
+		root = parse(this, Xml.getRootNode(doc));
 	}
 
 	public void parse(InputStream inputStream) {
@@ -304,9 +267,14 @@ public class DataDoc {
 		parse(Stream.newInputStream(bytes));
 	}
 
+	public Document serialize() {
+
+		return root.serialize();
+	}
+
 	public String toXML() {
 
-		return Xml.serialize(serialize());
+		return root.toXML();
 	}
 
 	public String toString() {
@@ -316,7 +284,7 @@ public class DataDoc {
 
 	public void toDataObject(DataObject bo) {
 
-		this.getRoot().toDataObject(bo);
+		root.toDataObject(bo);
 	}
 
 	public void print() {

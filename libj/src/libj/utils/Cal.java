@@ -10,6 +10,8 @@ import java.util.TimeZone;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import libj.error.RuntimeException2;
+
 public class Cal {
 
 	public static final long MILLIS_PER_SECOND = 1000;
@@ -51,10 +53,11 @@ public class Cal {
 
 	public static Date min(Date d0, Date d1) {
 
-		if (d0.getTime() < d1.getTime())
+		if (d0.getTime() < d1.getTime()) {
 			return d0;
-		else
+		} else {
 			return d1;
+		}
 	}
 
 	public static Date max(Date d0, Date d1) {
@@ -67,16 +70,18 @@ public class Cal {
 
 	public static Date nvl(Date d0, Date d1) {
 
-		if (d0 != null)
+		if (d0 != null) {
 			return d0;
-		else
+		} else {
 			return d1;
+		}
 	}
 
 	public static Long diff(Date d0, Date d1) {
 
-		if (d0 == null || d1 == null)
+		if (d0 == null || d1 == null) {
 			return null;
+		}
 
 		return d0.getTime() - d1.getTime();
 	}
@@ -92,8 +97,9 @@ public class Cal {
 	// дата JAVA->GC
 	public static GregorianCalendar getGC(Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(d);
@@ -104,8 +110,9 @@ public class Cal {
 	// дата SQL->JAVA
 	public static Date getDate(java.sql.Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(d);
@@ -116,8 +123,9 @@ public class Cal {
 	// дата XML->JAVA
 	public static Date getDate(XMLGregorianCalendar d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		return d.toGregorianCalendar().getTime();
 	}
@@ -125,8 +133,9 @@ public class Cal {
 	// дата GC->JAVA
 	public static Date getDate(GregorianCalendar gc) {
 
-		if (gc == null)
+		if (gc == null) {
 			return null;
+		}
 
 		return gc.getTime();
 	}
@@ -134,8 +143,9 @@ public class Cal {
 	// дата JAVA->XML
 	public static XMLGregorianCalendar getXmlDate(Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(d);
@@ -155,8 +165,9 @@ public class Cal {
 	// дата SQL->XML
 	public static XMLGregorianCalendar getXmlDate(java.sql.Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(d);
@@ -176,8 +187,9 @@ public class Cal {
 	// дата GC->XML
 	public static XMLGregorianCalendar getXmlDate(GregorianCalendar gc) {
 
-		if (gc == null)
+		if (gc == null) {
 			return null;
+		}
 
 		XMLGregorianCalendar xgc;
 
@@ -194,8 +206,9 @@ public class Cal {
 	// дата XML->SQL
 	public static java.sql.Date getSqlDate(XMLGregorianCalendar d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		Date r1 = d.toGregorianCalendar().getTime();
 		java.sql.Date r2 = new java.sql.Date(r1.getTime());
@@ -206,8 +219,9 @@ public class Cal {
 	// дата JAVA->SQL
 	public static java.sql.Date getSqlDate(Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		java.sql.Date r = new java.sql.Date(d.getTime());
 
@@ -217,8 +231,9 @@ public class Cal {
 	// дата JAVA->SQL
 	public static java.sql.Time getSqlTime(Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		java.sql.Time r = new java.sql.Time(d.getTime());
 
@@ -228,8 +243,9 @@ public class Cal {
 	// дата+время JAVA->SQL
 	public static java.sql.Timestamp getSqlTimestamp(Date d) {
 
-		if (d == null)
+		if (d == null) {
 			return null;
+		}
 
 		java.sql.Timestamp r = new java.sql.Timestamp(d.getTime());
 
@@ -244,7 +260,7 @@ public class Cal {
 			return new SimpleDateFormat(format).parse(text);
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException2("Unparseable date: %s", text);
 		}
 	}
 
@@ -256,7 +272,7 @@ public class Cal {
 			return getSqlDate(new SimpleDateFormat(format).parse(text));
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException2("Unparseable date: %s", text);
 		}
 	}
 
@@ -268,7 +284,7 @@ public class Cal {
 			return getSqlTimestamp(new SimpleDateFormat(format).parse(text));
 
 		} catch (ParseException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException2("Unparseable timestamp: %s", text);
 		}
 	}
 
@@ -277,13 +293,14 @@ public class Cal {
 
 		try {
 
-			if (format != null)
+			if (format != null) {
 				return new SimpleDateFormat(format).format(date);
-			else
+			} else {
 				return date.toString();
+			}
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException2("%s: %s, format: %s", e.getMessage(), date.toString(), format);
 		}
 	}
 
@@ -292,13 +309,14 @@ public class Cal {
 
 		try {
 
-			if (format != null)
+			if (format != null) {
 				return new SimpleDateFormat(format).format(gc.getTime());
-			else
+			} else {
 				return gc.toString();
+			}
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException2("%s: %s, format: %s", e.getMessage(), gc.toString(), format);
 		}
 	}
 

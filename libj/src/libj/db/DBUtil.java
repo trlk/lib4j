@@ -8,9 +8,9 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-import libj.dom.DataNode;
-import libj.dom.ListDataNode;
-import libj.dom.MapDataNode;
+import libj.dom.XDataNode;
+import libj.dom.XListNode;
+import libj.dom.XMapNode;
 
 public class DBUtil {
 
@@ -28,7 +28,7 @@ public class DBUtil {
 		return rsMap;
 	}
 
-	private static Map<String, String> getMetadata(MapDataNode bo) {
+	private static Map<String, String> getMetadata(XMapNode bo) {
 
 		// bo map
 		Map<String, String> boMap = new HashMap<String, String>();
@@ -40,7 +40,7 @@ public class DBUtil {
 		return boMap;
 	}
 
-	public static void getRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void getRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		// bo map
 		Map<String, String> boMap = getMetadata(bo);
@@ -78,16 +78,16 @@ public class DBUtil {
 	}
 
 
-	public static DataNode getRow(ResultSet rs, String nodeName) throws SQLException {
+	public static XDataNode getRow(ResultSet rs, String nodeName) throws SQLException {
 
-		MapDataNode bo = new MapDataNode(nodeName);
+		XMapNode bo = new XMapNode(null, nodeName);
 
 		getRow(rs, bo);
 
 		return bo;
 	}
 
-	public static void fetchRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void fetchRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		if (rs.next()) {
 
@@ -99,7 +99,7 @@ public class DBUtil {
 	}
 
 
-	public static DataNode fetchRow(ResultSet rs, String nodeName) throws SQLException {
+	public static XDataNode fetchRow(ResultSet rs, String nodeName) throws SQLException {
 
 		if (rs.next()) {
 
@@ -110,9 +110,9 @@ public class DBUtil {
 		}
 	}
 
-	public static ListDataNode fetchList(ResultSet rs, String listName, String nodeName) throws SQLException {
+	public static XListNode fetchList(ResultSet rs, String listName, String nodeName) throws SQLException {
 
-		ListDataNode boList = new ListDataNode(listName);
+		XListNode boList = new XListNode(null, listName);
 
 		while (rs.next()) {
 
@@ -122,7 +122,7 @@ public class DBUtil {
 		return boList;
 	}
 
-	public static void setRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void setRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		// bo map
 		Map<String, String> boMap = getMetadata(bo);
@@ -150,20 +150,20 @@ public class DBUtil {
 		}
 	}
 
-	public static void updateRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void updateRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		setRow(rs, bo);
 		rs.updateRow();
 	}
 
-	public static void insertRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void insertRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		rs.moveToInsertRow();
 		setRow(rs, bo);
 		rs.insertRow();
 	}
 
-	public static void upsertRow(ResultSet rs, MapDataNode bo) throws SQLException {
+	public static void upsertRow(ResultSet rs, XMapNode bo) throws SQLException {
 
 		if (rs.next()) {
 
@@ -175,11 +175,11 @@ public class DBUtil {
 		}
 	}
 
-	public static void insertList(ResultSet rs, ListDataNode boList) throws SQLException {
+	public static void insertList(ResultSet rs, XListNode boList) throws SQLException {
 
-		for (DataNode row : boList.list()) {
+		for (XDataNode row : boList.list()) {
 
-			insertRow(rs, (MapDataNode) row);
+			insertRow(rs, (XMapNode) row);
 		}
 	}
 

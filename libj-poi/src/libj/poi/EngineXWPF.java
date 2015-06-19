@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import libj.debug.Debug;
 import libj.debug.Log;
-import libj.debug.Stack;
 import libj.error.Throw;
 import libj.utils.Stream;
 import libj.utils.Xml;
@@ -22,16 +21,21 @@ import org.w3c.dom.Document;
 
 public class EngineXWPF {
 
-	private final String VELOCITY_TAG = "$";
-	private final String FREEMARKER_TAG = "${";
+	public static enum DataMode {
+		COMMA, XPATH, MIXED
+	}
+
+	private final String TAG_VELOCITY = "$";
+	private final String TAG_FREEMARKER = "${";
 
 	private String openTag = "#{";
 	private String closeTag = "}";
 
 	private XWPFDocument doc;
 	private Document data;
+	private DataMode dataMode;
 
-	public EngineXWPF(InputStream templateStream, InputStream dataStream) {
+	public EngineXWPF(InputStream templateStream, InputStream dataStream, DataMode dataMode) {
 
 		try {
 
@@ -39,11 +43,16 @@ public class EngineXWPF {
 			setDoc(new XWPFDocument(templateStream));
 
 			// parse xml data stream
-			setData(Xml.parse(dataStream));
+			setData(Xml.parse(dataStream), dataMode);
 
 		} catch (Exception e) {
 			Throw.runtimeException(e);
 		}
+	}
+
+	public EngineXWPF(InputStream templateStream, InputStream dataStream) {
+
+		this(templateStream, dataStream, DataMode.MIXED);
 	}
 
 	public XWPFDocument getDoc() {
@@ -60,6 +69,11 @@ public class EngineXWPF {
 
 	public void setData(Document data) {
 		this.data = data;
+	}
+
+	public void setData(Document data, DataMode dataMode) {
+		this.data = data;
+		this.dataMode = dataMode;
 	}
 
 	public String getOpenTag() {
@@ -83,14 +97,16 @@ public class EngineXWPF {
 	}
 
 	public boolean isVelocitySyntax() {
-		if (!isFreemarkerSyntax())
-			return XWPF.getText(doc).contains(VELOCITY_TAG);
-		else
+
+		if (!isFreemarkerSyntax()) {
+			return XWPF.getText(doc).contains(TAG_VELOCITY);
+		} else {
 			return false;
+		}
 	}
 
 	public boolean isFreemarkerSyntax() {
-		return XWPF.getText(doc).contains(FREEMARKER_TAG);
+		return XWPF.getText(doc).contains(TAG_FREEMARKER);
 	}
 
 	public ByteArrayInputStream getDocInputStream() {
@@ -114,10 +130,12 @@ public class EngineXWPF {
 	}
 
 	public InputStream getDataInputStream() {
+
 		return Xml.serializeToInputStream(data);
 	}
 
 	public OutputStream getDataOutputStream() {
+
 		return Xml.serializeToOutputStream(data);
 	}
 
@@ -145,13 +163,15 @@ public class EngineXWPF {
 					y = y + closeTag.length();
 					String tag = text.substring(x, y);
 
-					if (!list.contains(tag))
+					if (!list.contains(tag)) {
 						list.add(tag);
+					}
 
 					x = y;
 
-				} else
+				} else {
 					x = -1;
+				}
 			}
 		} while (x >= 0);
 
@@ -167,11 +187,9 @@ public class EngineXWPF {
 		for (int i = 0; i < list.size(); i++) {
 
 			String tag = list.get(i);
+			String dataPath = tag.substring(openTag.length(), tag.length() - closeTag.length()).trim();
 
-			String data = tag.substring(openTag.length(),
-					tag.length() - closeTag.length()).trim();
-
-			map.put(tag, data);
+			map.put(tag, dataPath);
 		}
 
 		return map;
@@ -181,28 +199,48 @@ public class EngineXWPF {
 
 		try {
 
-			Map<String, String> map = getTagMap();
-			Map<String, String> data = Xml.createMap(this.data,
-					Debug.isEnabled());
+			Map<String, String> tags = getTagMap();
+			Map<String, String> data = new HashMap<String, String>();
+
+			if (this.dataMode == DataMode.COMMA || this.dataMode == DataMode.MIXED) {
+
+				data.putAll(Xml.createMap(this.data, Debug.isEnabled()));
+			}
+
+			if (this.dataMode == DataMode.XPATH || this.dataMode == DataMode.MIXED) {
+
+				// fetch data
+				for (String dataPath : tags.values()) {
+
+					try {
+
+						if (!data.containsKey(dataPath)) {
+							data.put(dataPath, Xml.getText(this.data, dataPath));
+						}
+
+					} catch (Exception e) {
+						Log.warn(e.getMessage());
+					}
+				}
+			}
 
 			// print data map
 			if (Debug.isEnabled()) {
 
-				Log.debug("Data map: [%s]", Stack.thisMethodName());
+				Log.debug("Report data:");
 
 				// sort data map
-				SortedSet<String> sortedKeys = new TreeSet<String>(
-						data.keySet());
+				SortedSet<String> sortedKeys = new TreeSet<String>(data.keySet());
 
 				for (String key : sortedKeys) {
 					Log.debug("%s=%s", key, data.get(key));
 				}
 			}
 
-			Log.debug("Processing tags: [%s]", Stack.thisMethodName());
+			Log.debug("Processing report tags:");
 
 			// process all keys in template
-			for (Map.Entry<String, String> entry : map.entrySet()) {
+			for (Map.Entry<String, String> entry : tags.entrySet()) {
 
 				String tag = entry.getKey(); // #{data.key}
 				String key = entry.getValue(); // data.key
@@ -216,7 +254,7 @@ public class EngineXWPF {
 
 				} else {
 
-					Log.info("Key not found: %s", key);
+					Log.warn("Key not found: %s", key);
 
 					if (Debug.isDisabled()) {
 						XWPF.replace(doc, tag, new String());
@@ -234,8 +272,9 @@ public class EngineXWPF {
 		try {
 
 			// have simple syntax?
-			if (isSimpleSyntax())
+			if (isSimpleSyntax()) {
 				processDocument();
+			}
 
 			// have freemarker syntax?
 			if (isFreemarkerSyntax()) {
@@ -243,8 +282,7 @@ public class EngineXWPF {
 				// resultStream
 				ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
 
-				XWPF.createFreemarkerReport(getDocInputStream(),
-						getDataInputStream(), resultStream);
+				XWPF.createFreemarkerReport(getDocInputStream(), getDataInputStream(), resultStream);
 
 				setDoc(new XWPFDocument(Stream.newInputStream(resultStream)));
 			}
