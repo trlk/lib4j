@@ -10,6 +10,7 @@ import libj.dom.XDocument;
 import libj.dom.XListNode;
 import libj.dom.XMapNode;
 import libj.utils.Text;
+
 import commonj.sdo.DataObject;
 import commonj.sdo.Property;
 import commonj.sdo.Type;
@@ -82,11 +83,11 @@ public class SDOUtils {
 
 		if (bo == null || node == null) {
 
-			Log.trace("Argument is null, skipped...");
+			Log.dtrace("Argument is null, skipped...");
 
 		} else {
 
-			Log.trace("### Node: %s ###", node.getName());
+			Log.dtrace("### Node: %s ###", node.getName());
 
 			Type type = bo.getType();
 			Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
@@ -99,7 +100,7 @@ public class SDOUtils {
 				boolean isList = prop.isMany();
 				boolean isContainer = prop.isContainment();
 
-				Log.trace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+				Log.dtrace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
 
 				if (isList) {
 

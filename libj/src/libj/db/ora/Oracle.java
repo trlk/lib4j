@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 import libj.db.Database;
 import libj.debug.Log;
 import libj.debug.Trace;
-import libj.error.Throw;
+import libj.error.RuntimeError;
 import libj.jdbc.NamedStatement;
 import libj.utils.Text;
 
@@ -48,6 +48,7 @@ public class Oracle extends Database {
 
 	// конструктор
 	public Oracle() {
+
 		setTimeout(DEFAULT_TIMEOUT);
 	}
 
@@ -63,6 +64,16 @@ public class Oracle extends Database {
 
 		this();
 		connect(url, user, password);
+	}
+
+	// флаг автокоммитта
+	public boolean isAutoCommit() throws SQLException {
+		return conn.getAutoCommit();
+	}
+
+	// установить флаг автокоммитта
+	public void setAutoCommit(boolean isAutoCommit) throws SQLException {
+		this.conn.setAutoCommit(isAutoCommit);
 	}
 
 	// флаг автозакрытия соединения
@@ -98,7 +109,7 @@ public class Oracle extends Database {
 
 				if (conn == null) {
 
-					Throw.runtimeException("Connection not established yet");
+					throw new RuntimeError("Connection not established yet");
 
 				} else if (conn.isClosed()) {
 
@@ -107,7 +118,7 @@ public class Oracle extends Database {
 			}
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 
 		return conn;
@@ -162,7 +173,7 @@ public class Oracle extends Database {
 
 			if (url == null) {
 
-				Throw.runtimeException("Database URL not specified");
+				throw new RuntimeError("Database URL not specified");
 
 			} else if (url.startsWith("jdbc:")) {
 
@@ -190,8 +201,12 @@ public class Oracle extends Database {
 				}
 
 			} else {
-				Throw.runtimeException("Invalid database URL: %s", url);
+				throw new RuntimeError("Invalid database URL: %s", url);
 			}
+
+			// подключились
+			Log.trace("Connected: autoCommit=%b, multiConnection=%b, autoCloseable=%b", isAutoCommit(),
+					isMultiConnection(), isAutoCloseable());
 
 			// установим параметры сессии
 			alterSession("NLS_DATE_FORMAT", DATE_FORMAT);
@@ -199,7 +214,7 @@ public class Oracle extends Database {
 		} catch (Exception e) {
 
 			disconnect();
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 
@@ -216,7 +231,7 @@ public class Oracle extends Database {
 
 		} catch (Exception e) {
 
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 

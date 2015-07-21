@@ -1,4 +1,4 @@
-package libj.poi;
+package libj.poi.api;
 
 import java.io.InputStream;
 import java.io.OutputStream;

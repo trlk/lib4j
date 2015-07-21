@@ -4,13 +4,11 @@ import java.io.InputStream;
 import java.util.List;
 
 import libj.debug.Log;
-import libj.debug.Trace;
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
 import libj.error.Throw;
 import libj.utils.Stream;
 import libj.utils.Text;
 import libj.utils.Xml;
-import libj.xml.XMLSchema;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -58,7 +56,7 @@ public class XDocument extends XNode {
 
 		// check for appropriate class
 		if (!XDataNode.class.isAssignableFrom(rootClass)) {
-			throw new RuntimeException2("Incompatible class: %s", rootClass.getSimpleName());
+			throw new RuntimeError("Incompatible class: %s", rootClass.getSimpleName());
 		}
 
 		// create root
@@ -155,9 +153,11 @@ public class XDocument extends XNode {
 		XDataNode dataNode = null;
 		String nodeName = node.getNodeName();
 
+		/*
 		if (Trace.isEnabled() && node != null) {
-			Trace.point(Text.printf("%s=%s", Xml.getNodeXPath(node), node.toString()));
+			Log.dtrace("%s=%s", Xml.getNodeXPath(node), node.toString());
 		}
+		*/
 
 		if (Text.isNotEmpty(nodeName)) {
 
@@ -181,11 +181,11 @@ public class XDocument extends XNode {
 
 						try {
 
-							dataNode = new XLeafNode(parent, nodeName, XMLSchema.getClass(type), text);
+							dataNode = new XLeafNode(parent, nodeName, type, text);
 
 						} catch (Exception e) {
 
-							//Log.error(e);
+							Log.warn(e);
 							dataNode = new XLeafNode(parent, nodeName, text);
 						}
 
@@ -208,7 +208,7 @@ public class XDocument extends XNode {
 
 							if (isList) {
 
-								Log.trace("List detected: %s/%s[]", nodeName, childName);
+								Log.dtrace("List detected: %s/%s[]", nodeName, childName);
 
 								XDataNode childNode = dataNode.get(childName);
 
@@ -282,9 +282,11 @@ public class XDocument extends XNode {
 		return Text.sprintf("%s=%s", this.root.getName(), this.root.toString());
 	}
 
-	public void toDataObject(DataObject bo) {
+	public DataObject toDataObject(DataObject bo) {
 
 		root.toDataObject(bo);
+
+		return bo;
 	}
 
 	public void print() {

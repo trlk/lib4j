@@ -161,7 +161,7 @@ public class Text {
 		return sb.toString();
 	}
 
-	public static String[] slit(String text, String expr) {
+	public static String[] split(String text, String expr) {
 
 		return text.split(expr);
 	}
@@ -211,7 +211,10 @@ public class Text {
 		StringBuilder sb = new StringBuilder();
 
 		for (String str : strArray) {
-			sb.append(str);
+
+			if (str != null) {
+				sb.append(str);
+			}
 		}
 
 		return sb.toString();
@@ -221,7 +224,7 @@ public class Text {
 
 		if (strArray.length > 0) {
 
-			String[] joinArray = new String[strArray.length - 1];
+			String[] joinArray = new String[strArray.length * 2];
 
 			int i = 0;
 			joinArray[i++] = strArray[0];
@@ -234,18 +237,24 @@ public class Text {
 
 			return join(joinArray);
 
-		} else
+		} else {
 			return EMPTY_STRING;
+		}
 	}
 
-	public static String join(String arg0, String... argN) {
+	public static String join(String arg0, String... args) {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(arg0);
+		if (arg0 != null) {
+			sb.append(arg0);
+		}
 
-		for (String strN : argN) {
-			sb.append(strN);
+		for (String argN : args) {
+
+			if (argN != null) {
+				sb.append(argN);
+			}
 		}
 
 		return sb.toString();
@@ -263,14 +272,18 @@ public class Text {
 	 *            new token to replace.
 	 */
 	public static final String replaceAll(String line, String oldString, String newString) {
+
 		int i = 0;
+
 		if ((i = line.indexOf(oldString, i)) >= 0) {
+
 			char line2[] = line.toCharArray();
 			char newString2[] = newString.toCharArray();
 			int oLength = oldString.length();
 			StringBuilder buf = new StringBuilder(line2.length);
 			buf.append(line2, 0, i).append(newString2);
 			i += oLength;
+
 			int j;
 			for (j = i; (i = line.indexOf(oldString, i)) > 0; j = i) {
 				buf.append(line2, j, i - j).append(newString2);
@@ -279,6 +292,7 @@ public class Text {
 
 			buf.append(line2, j, line2.length - j);
 			return buf.toString();
+
 		} else {
 			return line;
 		}
@@ -356,4 +370,53 @@ public class Text {
 
 		return result;
 	}
+
+	public static boolean equals(char what, char... args) {
+
+		for (char arg : args) {
+
+			if (what == arg) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean equals(String what, String... args) {
+
+		if (what != null) {
+
+			for (String arg : args) {
+
+				if (what.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static String onlyNumbers(String text) {
+
+		String result = new String();
+
+		final String DIGITS = "1234567890";
+
+		if (text != null) {
+
+			char[] arr = text.toCharArray();
+
+			for (int i = 0; i < arr.length; i++) {
+
+				if (DIGITS.indexOf(arr[i]) >= 0) {
+					result += arr[i];
+				}
+			}
+		}
+
+		return result;
+	}
+
 }

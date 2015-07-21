@@ -1,4 +1,4 @@
-package libj.poi;
+package libj.poi.engine;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,20 +11,19 @@ import java.util.Map;
 import libj.debug.Debug;
 import libj.debug.Log;
 import libj.error.Throw;
+import libj.poi.Engine;
 import libj.utils.Stream;
 import libj.utils.Xml;
 import net.sf.jxls.transformer.XLSTransformer;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.w3c.dom.Document;
 
-public class EngineJXLS {
+public class ExcelEngine extends Engine {
 
 	private Workbook doc;
-	private Document data;
 
-	public EngineJXLS(InputStream templateStream, InputStream dataStream) {
+	public ExcelEngine(InputStream templateStream, InputStream dataStream) {
 
 		try {
 
@@ -47,14 +46,6 @@ public class EngineJXLS {
 		this.doc = doc;
 	}
 
-	public Document getData() {
-		return data;
-	}
-
-	public void setData(Document data) {
-		this.data = data;
-	}
-
 	public ByteArrayInputStream getDocInputStream() {
 		return Stream.newInputStream(getDocOutputStream());
 	}
@@ -75,16 +66,8 @@ public class EngineJXLS {
 		return null;
 	}
 
-	public InputStream getDataInputStream() {
-		return Xml.serializeToInputStream(data);
-	}
-
-	public OutputStream getDataOutputStream() {
-		return Xml.serializeToOutputStream(data);
-	}
-
 	@SuppressWarnings("all")
-	private void processDocument() {
+	protected void processData() {
 
 		try {
 
@@ -107,7 +90,7 @@ public class EngineJXLS {
 
 		try {
 
-			processDocument();
+			processData();
 			doc.write(resultStream);
 
 		} catch (Exception e) {

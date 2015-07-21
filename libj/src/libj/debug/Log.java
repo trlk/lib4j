@@ -26,6 +26,7 @@ public class Log implements Serializable {
 	public static final int INFO = 4;
 	public static final int DEBUG = 5;
 	public static final int TRACE = 6; // the least serious
+	public static final int DTRACE = 7; // development trace
 	public static final int DEFAULT = INFO;
 	public static final int FORMAT_NONE = 0;
 	public static final int FORMAT_BRIEF = 1;
@@ -440,6 +441,21 @@ public class Log implements Serializable {
 	public static void trace(StackTraceElement trace, String text) {
 
 		log(TRACE, trace, text);
+	}
+
+	public static void dtrace(String text) {
+
+		log(DTRACE, Stack.prevTrace(), text);
+	}
+
+	public static void dtrace(String format, Object... args) {
+
+		log(DTRACE, Stack.prevTrace(), format, args);
+	}
+
+	public static void dtrace(Throwable e) {
+
+		log(DTRACE, Stack.prevTrace(), e);
 	}
 
 	@SuppressWarnings("all")

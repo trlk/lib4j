@@ -1,6 +1,6 @@
 package libj.utils;
 
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
 
 /**
  * Bool functions
@@ -36,7 +36,7 @@ public class Bool {
 		} else if (value.equalsIgnoreCase(TXT_FALSE) || value.equals(INT_FALSE.toString())) {
 			return FALSE;
 		} else {
-			throw new RuntimeException2("Unparseable boolean: %s", value);
+			throw new RuntimeError("Unparseable boolean: %s", value);
 		}
 	}
 

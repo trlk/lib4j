@@ -1,7 +1,8 @@
 package libj.dom;
 
 import libj.debug.Stack;
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
+import libj.xml.XMLSchema;
 
 public class XLeafNode extends XDataNode {
 
@@ -10,7 +11,7 @@ public class XLeafNode extends XDataNode {
 		super(parent, name);
 
 		if (object instanceof XDataNode) {
-			throw new RuntimeException2("Incompatible object class: %s", object.getClass().getName());
+			throw new RuntimeError("Incompatible object class: %s", object.getClass().getName());
 		}
 
 		setObject(object);
@@ -20,6 +21,11 @@ public class XLeafNode extends XDataNode {
 	public XLeafNode(XNode parent, String name, Class clazz, String value) throws Exception {
 
 		this(parent, name, clazz.getConstructor(String.class).newInstance(value));
+	}
+
+	public XLeafNode(XNode parent, String name, String xsType, String value) throws Exception {
+
+		this(parent, name, XMLSchema.createObject(xsType, value));
 	}
 
 	public boolean isHas(String name) {

@@ -18,7 +18,7 @@ public class Version {
 		String[] levels1 = version1.split("\\.");
 		String[] levels2 = version2.split("\\.");
 
-		int length = Math.max(levels1.length, levels2.length);
+		int length = Num.max(levels1.length, levels2.length);
 
 		for (int i = 0; i < length; i++) {
 

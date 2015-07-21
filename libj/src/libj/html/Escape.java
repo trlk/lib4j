@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import libj.utils.Math;
+import libj.utils.Num;
 
 public class Escape {
 
@@ -792,7 +792,7 @@ public class Escape {
 			 */
 			protected void ensureCapacity(int capacity) {
 				if (capacity > names.length) {
-					int newSize = Math.max(capacity, size + growBy);
+					int newSize = Num.max(capacity, size + growBy);
 					String[] newNames = new String[newSize];
 					System.arraycopy(names, 0, newNames, 0, size);
 					names = newNames;

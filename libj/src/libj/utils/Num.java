@@ -2,9 +2,9 @@ package libj.utils;
 
 import java.math.BigDecimal;
 
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
 
-public class Math {
+public class Num {
 
 	private static final int DEFAULT_SCALE = 2;
 
@@ -144,7 +144,17 @@ public class Math {
 			return new Float(value);
 
 		} catch (Exception e) {
-			throw new RuntimeException2("Unparseable float: %s", value);
+			throw new RuntimeError("Unparseable float: %s", value);
+		}
+	}
+
+	public static float toFloat(double value) {
+
+		try {
+			return new Float(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable float: %d", value);
 		}
 	}
 
@@ -159,7 +169,17 @@ public class Math {
 			return new Double(value);
 
 		} catch (Exception e) {
-			throw new RuntimeException2("Unparseable double: %s", value);
+			throw new RuntimeError("Unparseable double: %s", value);
+		}
+	}
+
+	public static double toDouble(float value) {
+
+		try {
+			return new Double(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable double: %d", value);
 		}
 	}
 
@@ -174,7 +194,7 @@ public class Math {
 			return new BigDecimal(value);
 
 		} catch (Exception e) {
-			throw new RuntimeException2("Unparseable bigDecimal: %s", value);
+			throw new RuntimeError("Unparseable bigDecimal: %s", value);
 		}
 	}
 

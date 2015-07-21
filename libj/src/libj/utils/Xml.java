@@ -9,7 +9,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -56,6 +56,7 @@ public class Xml {
 
 	// constants
 	public static final String TAG_TYPE = "type";
+	public static final String TAG_TEXT = "text";
 	public static final String TAG_NAME_ITEM = "item";
 	public static final String TAG_NAME_ITEMS = "items";
 	public static final String ATTR_NAME_TYPE = "type";
@@ -183,17 +184,21 @@ public class Xml {
 				Throw.runtimeException("%s: delimiter cannot be a null", Stack.thisMethodName());
 			}
 
-			Node endNode;
+			/*
+			Node fromNode;
 
-			if (delimiter == COMMA_DELIMITER) {
-				endNode = getRootNode(node);
+			if (offset == 0) {
+				fromNode = null; // до упора
+			} else if (offset == 1) {
+				fromNode = getRootNode(node); // до корневой ноды
 			} else {
-				endNode = null;
+				throw new RuntimeError("Unsupported offset: %d", offset);
 			}
+			*/
 
 			String path = null;
 
-			for (Node n = node; n != endNode; n = n.getParentNode()) {
+			for (Node n = node; n != null; n = n.getParentNode()) {
 
 				if (n.getNodeType() == Node.ELEMENT_NODE) {
 
@@ -248,37 +253,6 @@ public class Xml {
 		return getNodePath(node, XPATH_DELIMITER);
 	}
 
-	public static String getPrintedText(Object value) {
-
-		if (value instanceof Date) {
-
-			Date d = (Date) value;
-
-			if (Cal.trunc(d).equals(d)) {
-				return Cal.formatDate(d, Cal.DEFAULT_DATE_FORMAT);
-			} else {
-				return Cal.formatDate(d, Cal.DEFAULT_DATETIME_FORMAT);
-			}
-
-		} else if (value instanceof Float) {
-
-			return String.format("%.2f", (Float) value);
-
-		} else if (value instanceof Double) {
-
-			return String.format("%.2d", (Double) value);
-
-		} else if (value instanceof BigDecimal) {
-
-			return String.format("%.2d", Math.toDouble((BigDecimal) value));
-
-		} else {
-
-			return value.toString();
-		}
-
-	}
-
 	public static Boolean toBool(String value) {
 
 		if (value.equalsIgnoreCase(XML_TRUE)) {
@@ -316,23 +290,23 @@ public class Xml {
 
 	public static Float toFloat(String value) {
 
-		return Math.toFloat(value);
+		return Num.toFloat(value);
 	}
 
 	public static Double toDouble(String value) {
 
-		return Math.toDouble(value);
+		return Num.toDouble(value);
 	}
 
 	public static Integer toInteger(String value) {
 
-		return Math.toInteger(value);
+		return Num.toInteger(value);
 	}
 
 	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
 			char attrDelimiter) {
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 
@@ -365,13 +339,13 @@ public class Xml {
 
 									map.put(path + attrDelimiter + attrName, attrValue);
 
-									// printed date
+									// printed text
 									if (attrName.equals(Xml.TAG_TYPE)) {
 
 										Object object;
 
 										try {
-											object = XMLSchema.createObejct(attrValue, text);
+											object = XMLSchema.createObject(attrValue, text);
 										} catch (Exception e) {
 											Log.warn(e.getMessage());
 											object = text;
@@ -379,8 +353,8 @@ public class Xml {
 
 										String printedText = getPrintedText(object);
 
-										if (!printedText.equals(text)) {
-											map.put(path + attrDelimiter + "text", printedText);
+										if (Text.isNotEmpty(printedText)) {
+											map.put(path + attrDelimiter + TAG_TEXT, printedText);
 										}
 									}
 								}
@@ -463,7 +437,7 @@ public class Xml {
 
 					if (items.item(i).getNodeType() == Node.ELEMENT_NODE) {
 
-						Map<String, String> map = new HashMap<String, String>();
+						Map<String, String> map = new LinkedHashMap<String, String>();
 
 						Element item = (Element) items.item(i);
 
@@ -772,6 +746,36 @@ public class Xml {
 		}
 
 		return null;
+	}
+
+	private static String getPrintedText(Object value) {
+
+		if (value instanceof Date) {
+
+			Date d = (Date) value;
+
+			if (Cal.trunc(d).equals(d)) {
+				return Cal.formatDate(d, Cal.DEFAULT_DATE_FORMAT);
+			} else {
+				return Cal.formatDate(d, Cal.DEFAULT_DATETIME_FORMAT);
+			}
+
+		} else if (value instanceof Float) {
+
+			return String.format("%.2f", (Float) value);
+
+		} else if (value instanceof Double) {
+
+			return String.format("%.2d", (Double) value);
+
+		} else if (value instanceof BigDecimal) {
+
+			return String.format("%.2d", Num.toDouble((BigDecimal) value));
+
+		} else {
+
+			return value.toString();
+		}
 	}
 
 	public static void setNodeValue(Node node, String value) {

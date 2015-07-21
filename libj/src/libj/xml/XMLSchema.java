@@ -104,7 +104,7 @@ public class XMLSchema {
 		return object;
 	}
 
-	public static Object createObejct(String type, String value) throws Exception {
+	public static Object createObject(String type, String value) throws Exception {
 		return createObject(getClass(type), value);
 	}
 

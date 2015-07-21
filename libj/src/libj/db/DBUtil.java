@@ -63,7 +63,7 @@ public class DBUtil {
 					if (sqlType == Types.NUMERIC) {
 
 						if (boType == "Float") {
-							value = libj.utils.Math.toFloat(rs.getBigDecimal(prop));
+							value = libj.utils.Num.toFloat(rs.getBigDecimal(prop));
 						} else if (boType == "Integer") {
 							value = rs.getInt(prop);
 						} else if (boType == "Boolean") {

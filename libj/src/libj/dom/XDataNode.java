@@ -9,11 +9,11 @@ import java.util.Map;
 
 import libj.debug.Log;
 import libj.debug.Stack;
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
 import libj.sdo.SDOUtils;
 import libj.utils.Bool;
 import libj.utils.Cal;
-import libj.utils.Math;
+import libj.utils.Num;
 import libj.utils.Xml;
 import libj.xml.XMLSchema;
 
@@ -97,7 +97,7 @@ public abstract class XDataNode extends XNode {
 		if (parent instanceof XDataNode) {
 			return (XDataNode) parent;
 		} else {
-			throw new RuntimeException2("Node '%s' has no parent", this.name);
+			throw new RuntimeError("Node '%s' has no parent", this.name);
 		}
 	}
 
@@ -164,22 +164,22 @@ public abstract class XDataNode extends XNode {
 
 	public int toInteger() {
 
-		return Math.toInteger(this.toString());
+		return Num.toInteger(this.toString());
 	}
 
 	public float toFloat() {
 
-		return Math.toFloat(this.toString());
+		return Num.toFloat(this.toString());
 	}
 
 	public double toDouble() {
 
-		return Math.toDouble(this.toString());
+		return Num.toDouble(this.toString());
 	}
 
 	public BigDecimal toBigDecimal() {
 
-		return Math.toBigDecimal(this.toString());
+		return Num.toBigDecimal(this.toString());
 	}
 
 	public boolean toBoolean() {
@@ -412,23 +412,23 @@ public abstract class XDataNode extends XNode {
 	}
 
 	protected XDataNode throwNotApplicable(String methodName) {
-		throw new RuntimeException2("Method not applicable here: %s.%s", this.getClass().getSimpleName(), methodName);
+		throw new RuntimeError("Method not applicable here: %s.%s", this.getClass().getSimpleName(), methodName);
 	}
 
 	protected XDataNode throwNotSupported(String methodName) {
-		throw new RuntimeException2("Method not supported: %s.%s", this.getClass().getSimpleName(), methodName);
+		throw new RuntimeError("Method not supported: %s.%s", this.getClass().getSimpleName(), methodName);
 	}
 
 	private void serialize(XDataNode dataNode, Node target) {
 
 		if (dataNode == null || target == null) {
-			throw new RuntimeException2("Invalid arguments for %s()", Stack.thisMethodName());
+			throw new RuntimeError("Invalid arguments for %s()", Stack.thisMethodName());
 		}
 
 		String nodeName = dataNode.getName();
 
 		if (nodeName == null || nodeName.isEmpty()) {
-			throw new RuntimeException2("Node name can't be empty: %s (%s)", target.getNodeName(), dataNode.getType());
+			throw new RuntimeError("Node name can't be empty: %s (%s)", target.getNodeName(), dataNode.getType());
 		}
 
 		// parse
@@ -489,12 +489,12 @@ public abstract class XDataNode extends XNode {
 		Log.print(this.toXML());
 	}
 
-	public void toDataObject(DataObject bo) {
+	public DataObject toDataObject(DataObject bo) {
 
 		Type type = bo.getType();
 		Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
 
-		Log.trace("### %s: %s (%s) ###", this.getClass().getSimpleName(), this.getName(), type.getName());
+		Log.dtrace("### %s: %s (%s) ###", this.getClass().getSimpleName(), this.getName(), type.getName());
 
 		for (String propName : propMap.keySet()) {
 
@@ -503,7 +503,7 @@ public abstract class XDataNode extends XNode {
 			boolean isList = prop.isMany();
 			boolean isContainer = prop.isContainment();
 
-			Log.trace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+			Log.dtrace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
 
 			if (this.isHas(propName)) {
 
@@ -568,6 +568,8 @@ public abstract class XDataNode extends XNode {
 				}
 			}
 		}
+
+		return bo;
 	}
 
 }

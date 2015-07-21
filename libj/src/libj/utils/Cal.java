@@ -10,7 +10,7 @@ import java.util.TimeZone;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
 
 public class Cal {
 
@@ -88,8 +88,9 @@ public class Cal {
 
 	public static boolean equals(Date d0, Date d1) {
 
-		if (d0 == null || d1 == null)
+		if (d0 == null || d1 == null) {
 			return false;
+		}
 
 		return diff(d0, d1) == 0;
 	}
@@ -255,36 +256,49 @@ public class Cal {
 	// преобразование строки в дату согласно формату
 	public static Date toDate(String text, String format) {
 
+		if (text == null) {
+			return null;
+		}
+
 		try {
 
 			return new SimpleDateFormat(format).parse(text);
 
 		} catch (Exception e) {
-			throw new RuntimeException2("Unparseable date: %s", text);
+			throw new RuntimeError("Unparseable date: %s", text);
 		}
 	}
 
 	// преобразование строки в дату согласно формату
 	public static java.sql.Date toSqlDate(String text, String format) {
 
+		if (text == null) {
+			return null;
+		}
+
 		try {
 
 			return getSqlDate(new SimpleDateFormat(format).parse(text));
 
 		} catch (Exception e) {
-			throw new RuntimeException2("Unparseable date: %s", text);
+			throw new RuntimeError("Unparseable date: %s", text);
 		}
+
 	}
 
 	// преобразование строки в дату+время согласно формату
 	public static java.sql.Timestamp toSqlTimestamp(String text, String format) {
+
+		if (text == null) {
+			return null;
+		}
 
 		try {
 
 			return getSqlTimestamp(new SimpleDateFormat(format).parse(text));
 
 		} catch (ParseException e) {
-			throw new RuntimeException2("Unparseable timestamp: %s", text);
+			throw new RuntimeError("Unparseable timestamp: %s", text);
 		}
 	}
 
@@ -300,7 +314,7 @@ public class Cal {
 			}
 
 		} catch (Exception e) {
-			throw new RuntimeException2("%s: %s, format: %s", e.getMessage(), date.toString(), format);
+			throw new RuntimeError("%s: %s, format: %s", e.getMessage(), date.toString(), format);
 		}
 	}
 
@@ -316,7 +330,7 @@ public class Cal {
 			}
 
 		} catch (Exception e) {
-			throw new RuntimeException2("%s: %s, format: %s", e.getMessage(), gc.toString(), format);
+			throw new RuntimeError("%s: %s, format: %s", e.getMessage(), gc.toString(), format);
 		}
 	}
 

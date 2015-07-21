@@ -3,8 +3,11 @@ package libj.dom;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
+import libj.sdo.SDOUtils;
 import spring.util.LinkedCaseInsensitiveMap;
+
+import commonj.sdo.DataObject;
 
 public class XMapNode extends XDataNode {
 
@@ -62,7 +65,7 @@ public class XMapNode extends XDataNode {
 			return keyArray[index];
 		}
 
-		throw new RuntimeException2("Index out of bound: %s[%s]", this.name, index);
+		throw new RuntimeError("Index out of bound: %s[%s]", this.name, index);
 	}
 
 	public int indexOf(String name) {
@@ -77,13 +80,13 @@ public class XMapNode extends XDataNode {
 			i++;
 		}
 
-		throw new RuntimeException2("Node not found: %s/%s", this.name, name);
+		throw new RuntimeError("Node not found: %s/%s", this.name, name);
 	}
 
 	public XDataNode get(String name) {
 
 		if (!isHas(name)) {
-			throw new RuntimeException2("Node not found: %s/%s", this.name, name);
+			throw new RuntimeError("Node not found: %s/%s", this.name, name);
 		}
 
 		return map().get(name);
@@ -108,6 +111,8 @@ public class XMapNode extends XDataNode {
 			return set(name, (XDataNode) object);
 		} else if (object instanceof XDocument) {
 			return set(name, ((XDocument) object).getRoot());
+		} else if (object instanceof DataObject) {	
+			return set(name, SDOUtils.convertToDocument((DataObject) object).getRoot());
 		} else {
 			return set(name, new XLeafNode(this, name, object));
 		}
@@ -120,7 +125,7 @@ public class XMapNode extends XDataNode {
 	public void remove(String name) {
 
 		if (!isHas(name)) {
-			throw new RuntimeException2("Node not found: %s/%s", this.name, name);
+			throw new RuntimeError("Node not found: %s/%s", this.name, name);
 		}
 
 		map().remove(name);

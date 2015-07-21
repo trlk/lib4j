@@ -1,4 +1,4 @@
-package libj.poi;
+package libj.poi.engine;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -6,36 +6,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import libj.debug.Debug;
 import libj.debug.Log;
-import libj.error.Throw;
+import libj.error.RuntimeError;
+import libj.poi.Engine;
+import libj.poi.api.XWPF;
+import libj.poi.tag.Part;
+import libj.poi.tag.Tag;
 import libj.utils.Stream;
+import libj.utils.Text;
 import libj.utils.Xml;
 
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.w3c.dom.Document;
 
-public class EngineXWPF {
+public class WordEngine extends Engine {
 
 	public static enum DataMode {
-		COMMA, XPATH, MIXED
+		XPATH, COMMA, MIXED
 	}
 
-	private final String TAG_VELOCITY = "$";
-	private final String TAG_FREEMARKER = "${";
-
-	private String openTag = "#{";
-	private String closeTag = "}";
-
 	private XWPFDocument doc;
-	private Document data;
-	private DataMode dataMode;
+	private DataMode dataMode = DataMode.MIXED; // default dataMode 
 
-	public EngineXWPF(InputStream templateStream, InputStream dataStream, DataMode dataMode) {
+	public WordEngine(InputStream templateStream, InputStream dataStream, DataMode dataMode) {
 
 		try {
 
@@ -46,11 +45,11 @@ public class EngineXWPF {
 			setData(Xml.parse(dataStream), dataMode);
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 
-	public EngineXWPF(InputStream templateStream, InputStream dataStream) {
+	public WordEngine(InputStream templateStream, InputStream dataStream) {
 
 		this(templateStream, dataStream, DataMode.MIXED);
 	}
@@ -63,33 +62,9 @@ public class EngineXWPF {
 		this.doc = doc;
 	}
 
-	public Document getData() {
-		return data;
-	}
-
-	public void setData(Document data) {
-		this.data = data;
-	}
-
 	public void setData(Document data, DataMode dataMode) {
 		this.data = data;
 		this.dataMode = dataMode;
-	}
-
-	public String getOpenTag() {
-		return openTag;
-	}
-
-	public void setOpenTag(String openTag) {
-		this.openTag = openTag;
-	}
-
-	public String getCloseTag() {
-		return closeTag;
-	}
-
-	public void setCloseTag(String closeTag) {
-		this.closeTag = closeTag;
 	}
 
 	public boolean isSimpleSyntax() {
@@ -123,23 +98,11 @@ public class EngineXWPF {
 			return outputStream;
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
-
-		return null;
 	}
 
-	public InputStream getDataInputStream() {
-
-		return Xml.serializeToInputStream(data);
-	}
-
-	public OutputStream getDataOutputStream() {
-
-		return Xml.serializeToOutputStream(data);
-	}
-
-	public ArrayList<String> getTagList() {
+	public ArrayList<String> getDocTags() {
 
 		ArrayList<String> list = new ArrayList<String>();
 
@@ -178,48 +141,88 @@ public class EngineXWPF {
 		return list;
 	}
 
-	public Map<String, String> getTagMap() {
+	public List<Tag> getTagList() {
 
-		Map<String, String> map = new HashMap<String, String>();
+		List<Tag> tagList = new ArrayList<Tag>();
+		Map<String, Tag> tagMap = new HashMap<String, Tag>();
 
-		ArrayList<String> list = getTagList();
+		ArrayList<String> list = getDocTags();
 
 		for (int i = 0; i < list.size(); i++) {
 
-			String tag = list.get(i);
-			String dataPath = tag.substring(openTag.length(), tag.length() - closeTag.length()).trim();
-
-			map.put(tag, dataPath);
+			String brutto = list.get(i);
+			tagMap.put(brutto, new Tag(this, brutto));
 		}
 
-		return map;
+		// store into list
+		for (Tag tag : tagMap.values()) {
+			tagList.add(tag);
+		}
+
+		return tagList;
 	}
 
-	public void processDocument() {
+	protected void processData() {
 
 		try {
 
-			Map<String, String> tags = getTagMap();
-			Map<String, String> data = new HashMap<String, String>();
+			List<Tag> taglist = getTagList();
+			Map<String, Object> data = new HashMap<String, Object>();
 
+			// comma separated tags
 			if (this.dataMode == DataMode.COMMA || this.dataMode == DataMode.MIXED) {
 
-				data.putAll(Xml.createMap(this.data, Debug.isEnabled()));
+				Map<String, String> dataMap = Xml.createMap(this.data, Debug.isEnabled());
+
+				// fetch data
+				for (Tag tag : taglist) {
+
+					String[] exprArray = tag.getExprArray();
+
+					for (String expr : exprArray) {
+
+						// like tag support
+						if (expr.startsWith(likeTag)) {
+
+							// search..
+							for (String key : dataMap.keySet()) {
+
+								if (key.endsWith(expr.substring(likeTag.length()))) {
+
+									data.put(expr, dataMap.get(key));
+									break;
+								}
+							}
+
+						} else {
+
+							if (dataMap.containsKey(expr)) {
+								data.put(expr, dataMap.get(expr));
+							}
+						}
+					}
+				}
 			}
 
+			// xpath tags
 			if (this.dataMode == DataMode.XPATH || this.dataMode == DataMode.MIXED) {
 
 				// fetch data
-				for (String dataPath : tags.values()) {
+				for (Tag tag : taglist) {
 
-					try {
+					String[] exprArray = tag.getExprArray();
 
-						if (!data.containsKey(dataPath)) {
-							data.put(dataPath, Xml.getText(this.data, dataPath));
+					for (String expr : exprArray) {
+
+						try {
+
+							if (!data.containsKey(expr)) {
+								data.put(expr, Xml.getText(this.data, expr));
+							}
+
+						} catch (Exception e) {
+							Log.warn(e.getMessage());
 						}
-
-					} catch (Exception e) {
-						Log.warn(e.getMessage());
 					}
 				}
 			}
@@ -240,30 +243,53 @@ public class EngineXWPF {
 			Log.debug("Processing report tags:");
 
 			// process all keys in template
-			for (Map.Entry<String, String> entry : tags.entrySet()) {
+			for (Tag tag : taglist) {
 
-				String tag = entry.getKey(); // #{data.key}
-				String key = entry.getValue(); // data.key
+				String brutto = tag.getBrutto(); // #{data.key}	
+				String netto = tag.getNetto(); // data.key
 
-				if (data.containsKey(key)) {
+				String value = null;
 
-					String keyValue = data.get(key);
+				if (tag.isFunc()) {
 
-					Log.debug("%s=%s", key, keyValue);
-					XWPF.replace(doc, tag, keyValue);
+					List<Part> parts = tag.getParts();
+
+					for (Part part : parts) {
+
+						if (part.isExpr() && data.containsKey(part.getExpr())) {
+							part.setData(data.get(part.getExpr()));
+						}
+					}
+
+					value = callFunc(tag.getFuncName(), tag.getDataArray());
 
 				} else {
 
-					Log.warn("Key not found: %s", key);
+					String expr = tag.getExpr(); // data.key
+
+					if (data.containsKey(expr)) {
+
+						value = data.get(expr).toString();
+					}
+				}
+
+				if (value != null) {
+
+					Log.debug("%s=%s", netto, value);
+					XWPF.replace(doc, brutto, value);
+
+				} else {
+
+					Log.warn("Data not found: %s", netto);
 
 					if (Debug.isDisabled()) {
-						XWPF.replace(doc, tag, new String());
+						XWPF.replace(doc, brutto, Text.EMPTY_STRING);
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 
@@ -273,7 +299,7 @@ public class EngineXWPF {
 
 			// have simple syntax?
 			if (isSimpleSyntax()) {
-				processDocument();
+				processData();
 			}
 
 			// have freemarker syntax?
@@ -292,7 +318,7 @@ public class EngineXWPF {
 			}
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 
@@ -305,7 +331,7 @@ public class EngineXWPF {
 			doc.write(resultStream);
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 
@@ -318,7 +344,7 @@ public class EngineXWPF {
 			XWPF.documentToPDF(doc, pdfStream);
 
 		} catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 	}
 

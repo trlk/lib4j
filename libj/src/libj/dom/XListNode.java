@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import libj.debug.Stack;
-import libj.error.RuntimeException2;
+import libj.error.RuntimeError;
+import libj.sdo.SDOUtils;
+
+import commonj.sdo.DataObject;
 
 public class XListNode extends XDataNode {
 
@@ -116,7 +119,7 @@ public class XListNode extends XDataNode {
 			}
 		}
 
-		throw new RuntimeException2("Attribute not found: %s@%s=%s", this.name, attrName, attrValue);
+		throw new RuntimeError("Attribute not found: %s@%s=%s", this.name, attrName, attrValue);
 	}
 
 	public XDataNode set(int index, XDataNode dataNode) {
@@ -138,6 +141,8 @@ public class XListNode extends XDataNode {
 			return set(index, (XDataNode) object);
 		} else if (object instanceof XDocument) {
 			return set(index, ((XDocument) object).getRoot());
+		} else if (object instanceof DataObject) {
+			return set(index, SDOUtils.convertToDocument((DataObject) object).getRoot());
 		} else {
 			return set(index, new XLeafNode(this, this.name, object));
 		}
