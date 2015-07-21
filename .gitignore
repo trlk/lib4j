@@ -91,3 +91,4 @@ hs_err_pid*
 
 #libj ignores
 test/
+/lib/xdocreport-1.0.4.jar
