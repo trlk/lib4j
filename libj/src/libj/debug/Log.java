@@ -12,38 +12,36 @@ import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 
-import libj.error.Throw;
+import libj.error.RuntimeError;
 import libj.utils.Cal;
 import libj.utils.Text;
 
 @SuppressWarnings("serial")
 public class Log implements Serializable {
 
-	// constants
-	public static final int FATAL = 1; // the most serious
-	public static final int ERROR = 2;
-	public static final int WARN = 3;
-	public static final int INFO = 4;
-	public static final int DEBUG = 5;
-	public static final int TRACE = 6; // the least serious
-	public static final int DTRACE = 7; // development trace
-	public static final int DEFAULT = INFO;
-	public static final int FORMAT_NONE = 0;
-	public static final int FORMAT_BRIEF = 1;
-	public static final int FORMAT_FULL = 2;
-	public static final int DEFAULT_FORMAT = FORMAT_BRIEF;
+	public enum Level {
+		NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, DTRACE
+	}
 
-	private static final String[] LEVEL_NAMES = { "NONE", "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
-	private static final String loggerJNDI = Log.class.getName();
+	public enum Format {
+		NONE, BRIEF, FULL
+	};
+
+	// constants
+	public static final Level DEFAULT_LEVEL = Level.INFO;
+	public static final Format DEFAULT_FORMAT = Format.BRIEF;
+	public static final String DEFAULT_INSTANCE_NAME = "DefaultInstance";
 
 	// logger instance
 	private static volatile Log INSTANCE;
+	private static volatile String instanceName = DEFAULT_INSTANCE_NAME;
 
 	// private variables
-	private int level = DEFAULT;
-	private int outFormat = FORMAT_BRIEF;
-	private int fileFormat = FORMAT_FULL;
+	private Level level = DEFAULT_LEVEL;
+	private Format outFormat = Format.BRIEF;
+	private Format fileFormat = Format.FULL;
 	private String fileName;
+	private boolean forwardLog4j = false;
 
 	// streams
 	transient private PrintStream outStream;
@@ -53,13 +51,27 @@ public class Log implements Serializable {
 	public static Log getInstance() {
 
 		if (INSTANCE == null) {
-			createInstance();
+			create();
 		}
 
 		return INSTANCE;
 	}
 
-	private static synchronized void createInstance() {
+	public static String getInstanceName() {
+		return instanceName;
+	}
+
+	public static String getJNDI() {
+		return Text.sprintf(Log.class.getName() + "." + getInstanceName());
+	}
+
+	public static synchronized void init(String instanceName) {
+
+		Log.instanceName = instanceName;
+		create();
+	}
+
+	private static synchronized void create() {
 
 		INSTANCE = lookup();
 
@@ -75,7 +87,7 @@ public class Log implements Serializable {
 		try {
 
 			InitialContext ctx = new InitialContext();
-			return (Log) ctx.lookup(loggerJNDI);
+			return (Log) ctx.lookup(getJNDI());
 
 		} catch (Exception e) {
 			/*suppress*/
@@ -90,12 +102,14 @@ public class Log implements Serializable {
 
 		try {
 
-			ctx.bind(loggerJNDI, getInstance());
+			ctx.bind(getJNDI(), getInstance());
 
 		} catch (NameAlreadyBoundException e) {
 
-			ctx.rebind(loggerJNDI, getInstance());
+			ctx.rebind(getJNDI(), getInstance());
 		}
+
+		info("Logger bind complete: instanceName:=%s, JNDI=%s", getInstanceName(), getJNDI());
 	}
 
 	private static synchronized void reconf() {
@@ -130,24 +144,34 @@ public class Log implements Serializable {
 		}
 	}
 
-	public static int getLevel() {
+	public static Level getLevel() {
 
 		return getInstance().level;
 	}
 
-	public static void setLevel(int level) {
+	public static void setLevel(Level level) {
 
 		if (getInstance().level != level) {
 
 			getInstance().level = level;
 
-			info("Logging level was changed to '%s'", LEVEL_NAMES[level]);
+			info("Logging level was changed to '%s'", level.name());
 		}
 	}
 
-	public static boolean isLevel(int level) {
+	public static void setLevel(int level) {
 
-		return level <= getInstance().level;
+		setLevel(Level.values()[level]);
+	}
+
+	public static boolean isLoggable(Level level, Log instance) {
+
+		return level.compareTo(instance.level) <= 0;
+	}
+
+	public static boolean isLoggable(Level level) {
+
+		return isLoggable(level, getInstance());
 	}
 
 	public static PrintStream getOutStream() {
@@ -157,48 +181,48 @@ public class Log implements Serializable {
 
 	public static void setOutStream(PrintStream outStream) {
 
-		Log log = getInstance();
+		Log instance = getInstance();
 
 		// outStream
-		log.outStream = outStream;
+		instance.outStream = outStream;
 
 		// errStream
-		if (log.errStream == log.outStream) {
-			log.errStream = null;
+		if (instance.errStream == instance.outStream) {
+			instance.errStream = null;
 		}
 	}
 
 	public static void setOutStream(PrintStream outStream, PrintStream errStream) {
 
-		Log log = getInstance();
+		Log instance = getInstance();
 
 		// outStream
-		log.outStream = outStream;
+		instance.outStream = outStream;
 
 		// errStream
-		if (errStream != log.outStream) {
-			log.errStream = errStream;
+		if (errStream != instance.outStream) {
+			instance.errStream = errStream;
 		} else {
-			log.errStream = null;
+			instance.errStream = null;
 		}
 	}
 
-	public static int getOutFormat() {
+	public static Format getOutFormat() {
 
 		return getInstance().outFormat;
 	}
 
-	public static void setOutFormat(int format) {
+	public static void setOutFormat(Format format) {
 
 		getInstance().outFormat = format;
 	}
 
-	public static int getFileFormat() {
+	public static Format getFileFormat() {
 
 		return getInstance().fileFormat;
 	}
 
-	public static void setFileFormat(int format) {
+	public static void setFileFormat(Format format) {
 
 		getInstance().fileFormat = format;
 	}
@@ -219,6 +243,12 @@ public class Log implements Serializable {
 		reconf(); // apply configuration
 	}
 
+	public static void setForwardLog4j(boolean forwardLog4j) {
+
+		getInstance().forwardLog4j = forwardLog4j;
+		info("Forwading to Log4j is enabled");
+	}
+
 	private static void print(PrintStream stream, String text) {
 
 		if (stream != null) {
@@ -231,18 +261,28 @@ public class Log implements Serializable {
 		}
 	}
 
-	private static String format(int format, int level, StackTraceElement trace, String text) {
+	private static void print(PrintStream stream, Object object) {
+
+		if (object != null) {
+			print(object.toString());
+		}
+	}
+
+	private static String format(Format format, Level level, StackTraceElement trace, String text) {
 
 		switch (format) {
-		case FORMAT_NONE: {
+
+		case NONE: {
 
 			return text;
 		}
-		case FORMAT_BRIEF: {
 
-			return Text.printf("%s: %s", LEVEL_NAMES[level], text);
+		case BRIEF: {
+
+			return Text.printf("%s: %s", level.name(), text);
 		}
-		case FORMAT_FULL: {
+
+		case FULL: {
 
 			// full format logging
 			String dateString = Cal.formatDate(Cal.now(), "yyyy-MM-dd HH:mm:ss:SSS");
@@ -253,84 +293,97 @@ public class Log implements Serializable {
 				source = Text.substr(source, source.lastIndexOf(".") + 2);
 			}
 
-			return Text.printf("%-5s %s %-13.13s %s", LEVEL_NAMES[level], dateString, source, text);
+			return Text.printf("%-5s %s %-13.13s %s", level.name(), dateString, source, text);
 		}
 
 		default:
-			Throw.runtimeException("[%d] Unknown format", format);
+			throw new RuntimeError("[%d] Unknown format", format);
 		}
-
-		return null;
 	}
 
-	private static void log(int level, StackTraceElement trace, String text) {
+	private static void log(Level level, StackTraceElement trace, Object object) {
 
 		// if text not empty
-		if (text != null && !text.isEmpty()) {
+		if (object != null) {
 
-			// get instance
-			Log log = getInstance();
+			String text = object.toString();
 
-			// appropriate level?
-			if (level <= log.level) {
+			if (!text.isEmpty()) {
 
-				String outLine = format(log.outFormat, level, trace, text);
+				// get instance
+				Log instance = getInstance();
 
-				// stdout
-				print(log.outStream, outLine);
+				// appropriate level?
+				if (isLoggable(level, instance)) {
 
-				// stderr
-				if (log.errStream != null && level <= ERROR) {
+					String formatedLine = format(instance.outFormat, level, trace, text);
 
-					if (log.errStream != log.outStream) {
-						print(log.errStream, outLine);
-					}
-				}
+					// stdout
+					print(instance.outStream, formatedLine);
 
-				// file
-				if (log.fileStream != null) {
+					// stderr
+					if (instance.errStream != instance.outStream && level.compareTo(Level.ERROR) <= 0) {
 
-					String fileline = outLine;
-
-					if (log.fileFormat != log.outFormat) {
-
-						fileline = format(log.fileFormat, level, trace, text);
+						print(instance.errStream, formatedLine);
 					}
 
-					print(log.fileStream, fileline);
+					// file
+					if (instance.fileStream != null) {
+
+						if (instance.fileFormat != instance.outFormat) {
+
+							formatedLine = format(instance.fileFormat, level, trace, text);
+						}
+
+						print(instance.fileStream, formatedLine);
+					}
+
+					// log4j
+					if (instance.forwardLog4j) {
+
+						try {
+
+							Log4j.proxy(Log.class, trace, level, text);
+
+						} catch (Exception e) {
+
+							instance.forwardLog4j = false;
+							error(e);
+						}
+					}
 				}
 			}
 		}
 	}
 
-	private static void log(int level, StackTraceElement trace, String format, Object... args) {
+	private static void log(Level level, StackTraceElement trace, String format, Object... args) {
 
 		log(level, trace, Text.printf(format, args));
 	}
 
-	private static void log(int level, StackTraceElement trace, Throwable e) {
+	private static void log(Level level, StackTraceElement trace, Throwable e) {
 
 		log(level, trace, Error.getTextWithTrace(e));
 	}
 
-	public static void log(int level, String text) {
+	public static void log(Level level, Object object) {
 
-		log(level, Stack.prevTrace(), text);
+		log(level, Stack.prevTrace(), object);
 	}
 
-	public static void log(int level, Throwable e) {
+	public static void log(Level level, Throwable e) {
 
 		log(level, Stack.prevTrace(), e);
 	}
 
-	public static void log(int level, String format, Object... args) {
+	public static void log(Level level, String format, Object... args) {
 
 		log(level, Stack.prevTrace(), format, args);
 	}
 
-	public static void print(String text) {
+	public static void print(Object object) {
 
-		print(getInstance().outStream, text);
+		print(getInstance().outStream, object);
 	}
 
 	public static void print(String format, Object... args) {
@@ -343,119 +396,114 @@ public class Log implements Serializable {
 		print(Error.getTextWithTrace(e));
 	}
 
-	public static void fatal(String text) {
+	public static void fatal(Object object) {
 
-		log(FATAL, Stack.prevTrace(), text);
+		log(Level.FATAL, Stack.prevTrace(), object);
 	}
 
 	public static void fatal(String format, Object... args) {
 
-		log(FATAL, Stack.prevTrace(), format, args);
+		log(Level.FATAL, Stack.prevTrace(), format, args);
 	}
 
 	public static void fatal(Throwable e) {
 
-		log(FATAL, Stack.prevTrace(), e);
+		log(Level.FATAL, Stack.prevTrace(), e);
 	}
 
-	public static void error(String text) {
+	public static void error(Object object) {
 
-		log(ERROR, Stack.prevTrace(), text);
+		log(Level.ERROR, Stack.prevTrace(), object);
 	}
 
 	public static void error(String format, Object... args) {
 
-		log(ERROR, Stack.prevTrace(), format, args);
+		log(Level.ERROR, Stack.prevTrace(), format, args);
 	}
 
 	public static void error(Throwable e) {
 
-		log(ERROR, Stack.prevTrace(), e);
+		log(Level.ERROR, Stack.prevTrace(), e);
 	}
 
-	public static void warn(String text) {
+	public static void warn(Object object) {
 
-		log(WARN, Stack.prevTrace(), text);
+		log(Level.WARN, Stack.prevTrace(), object);
 	}
 
 	public static void warn(String format, Object... args) {
 
-		log(WARN, Stack.prevTrace(), format, args);
+		log(Level.WARN, Stack.prevTrace(), format, args);
 	}
 
 	public static void warn(Throwable e) {
 
-		log(WARN, Stack.prevTrace(), e);
+		log(Level.WARN, Stack.prevTrace(), e);
 	}
 
-	public static void info(String text) {
+	public static void info(Object object) {
 
-		log(INFO, Stack.prevTrace(), text);
+		log(Level.INFO, Stack.prevTrace(), object);
 	}
 
 	public static void info(String format, Object... args) {
 
-		log(INFO, Stack.prevTrace(), format, args);
-	}
-
-	public static void info(int value) {
-
-		log(INFO, Stack.prevTrace(), String.valueOf(value));
+		log(Level.INFO, Stack.prevTrace(), format, args);
 	}
 
 	public static void info(Throwable e) {
 
-		log(INFO, Stack.prevTrace(), e);
+		log(Level.INFO, Stack.prevTrace(), e);
 	}
 
-	public static void debug(String text) {
+	public static void debug(Object object) {
 
-		log(DEBUG, Stack.prevTrace(), text);
+		log(Level.DEBUG, Stack.prevTrace(), object);
 	}
 
 	public static void debug(String format, Object... args) {
 
-		log(DEBUG, Stack.prevTrace(), format, args);
+		log(Level.DEBUG, Stack.prevTrace(), format, args);
 	}
 
 	public static void debug(Throwable e) {
 
-		log(DEBUG, Stack.prevTrace(), e);
+		log(Level.DEBUG, Stack.prevTrace(), e);
 	}
 
-	public static void trace(String text) {
+	public static void trace(Object object) {
 
-		log(TRACE, Stack.prevTrace(), text);
+		log(Level.TRACE, Stack.prevTrace(), object);
 	}
 
 	public static void trace(String format, Object... args) {
 
-		log(TRACE, Stack.prevTrace(), format, args);
+		log(Level.TRACE, Stack.prevTrace(), format, args);
 	}
 
 	public static void trace(Throwable e) {
 
-		log(TRACE, Stack.prevTrace(), e);
+		log(Level.TRACE, Stack.prevTrace(), e);
 	}
 
-	public static void trace(StackTraceElement trace, String text) {
+	public static void trace(StackTraceElement trace, Object object) {
 
-		log(TRACE, trace, text);
+		log(Level.TRACE, trace, object);
 	}
 
-	public static void dtrace(String text) {
+	public static void dtrace(Object object) {
 
-		log(DTRACE, Stack.prevTrace(), text);
+		log(Level.DTRACE, Stack.prevTrace(), object);
 	}
 
 	public static void dtrace(String format, Object... args) {
 
-		log(DTRACE, Stack.prevTrace(), format, args);
+		log(Level.DTRACE, Stack.prevTrace(), format, args);
 	}
 
 	public static void dtrace(Throwable e) {
 
-		log(DTRACE, Stack.prevTrace(), e);
+		log(Level.DTRACE, Stack.prevTrace(), e);
 	}
 
 	@SuppressWarnings("all")

@@ -11,6 +11,7 @@ import java.util.Map;
 import libj.dom.XDataNode;
 import libj.dom.XListNode;
 import libj.dom.XMapNode;
+import libj.utils.Cal;
 
 public class DBUtil {
 
@@ -142,7 +143,7 @@ public class DBUtil {
 
 				if (value != null && sqlType == Types.TIMESTAMP && boType == "Date") {
 
-					value = libj.utils.Cal.getSqlTimestamp((Date) value);
+					value = Cal.toSQLTimestamp((Date) value);
 				}
 
 				rs.updateObject(prop, value);

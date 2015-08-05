@@ -312,7 +312,7 @@ public abstract class NamedStatement {
 	 */
 	public void setDate(String name, java.util.Date value) throws SQLException {
 
-		setDate(name, Cal.getSqlDate(value));
+		setDate(name, Cal.toSQLDate(value));
 	}
 
 	/**

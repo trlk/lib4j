@@ -1,10 +1,9 @@
 package libj.debug;
 
-
 public class Debug {
 
 	public static boolean isEnabled() {
-		return Log.isLevel(Log.DEBUG);
+		return Log.isLoggable(Log.Level.DEBUG);
 	}
 
 	public static boolean isDisabled() {
@@ -15,16 +14,16 @@ public class Debug {
 
 		if (isEnabled) {
 
-			if (!Log.isLevel(Log.DEBUG)) {
-				Log.setLevel(Log.DEBUG);
+			if (!Log.isLoggable(Log.Level.DEBUG)) {
+				Log.setLevel(Log.Level.DEBUG);
 			}
 
 			Log.debug("Debugging is enabled");
 
 		} else {
 
-			if (Log.isLevel(Log.DEBUG)) {
-				Log.setLevel(Log.DEFAULT);
+			if (Log.isLoggable(Log.Level.DEBUG)) {
+				Log.setLevel(Log.DEFAULT_LEVEL);
 			}
 
 			Log.info("Debugging is disabled");

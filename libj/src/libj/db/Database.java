@@ -16,7 +16,6 @@ public abstract class Database {
 	protected String url;
 	protected Integer timeout = DEFAULT_TIMEOUT;
 
-
 	// прочесть URL
 	public String getURL() {
 		return url;

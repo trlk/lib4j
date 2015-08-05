@@ -289,7 +289,7 @@ public class TWParser {
 		if (dateFormat == null) {
 
 			XMLGregorianCalendar xgc;
-			xgc = Cal.getXmlDate(date);
+			xgc = Cal.toXMLDate(date);
 			return xgc.toString();
 
 		} else {

@@ -1,6 +1,7 @@
 package libj.utils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import libj.error.RuntimeError;
 
@@ -135,12 +136,21 @@ public class Num {
 
 	public static Integer toInteger(String value) {
 
+		if (Text.isEmpty(value)) {
+			return null;
+		}
+
 		return toInt(value);
 	}
 
-	public static float toFloat(String value) {
+	public static Float toFloat(String value) {
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
+
 			return new Float(value);
 
 		} catch (Exception e) {
@@ -148,7 +158,11 @@ public class Num {
 		}
 	}
 
-	public static float toFloat(double value) {
+	public static Float toFloat(Double value) {
+
+		if (value == null) {
+			return null;
+		}
 
 		try {
 			return new Float(value);
@@ -158,12 +172,20 @@ public class Num {
 		}
 	}
 
-	public static float toFloat(BigDecimal bigDecimal) {
+	public static Float toFloat(BigDecimal value) {
 
-		return bigDecimal.floatValue();
+		if (value == null) {
+			return null;
+		}
+
+		return value.floatValue();
 	}
 
-	public static double toDouble(String value) {
+	public static Double toDouble(String value) {
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
 			return new Double(value);
@@ -173,9 +195,14 @@ public class Num {
 		}
 	}
 
-	public static double toDouble(float value) {
+	public static Double toDouble(Float value) {
+
+		if (value == null) {
+			return null;
+		}
 
 		try {
+
 			return new Double(value);
 
 		} catch (Exception e) {
@@ -183,61 +210,151 @@ public class Num {
 		}
 	}
 
-	public static double toDouble(BigDecimal bigDecimal) {
+	public static Double toDouble(BigDecimal value) {
 
-		return bigDecimal.doubleValue();
+		if (value == null) {
+			return null;
+		}
+
+		return value.doubleValue();
+	}
+
+	public static BigInteger toBigInteger(String value) {
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
+
+		try {
+			return new BigInteger(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable BigInteger: %s", value);
+		}
+	}
+
+	public static BigInteger toBigInteger(Integer value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		return BigInteger.valueOf(value);
+	}
+
+	public static BigInteger toBigInteger(Long value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		return BigInteger.valueOf(value);
 	}
 
 	public static BigDecimal toBigDecimal(String value) {
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
 			return new BigDecimal(value);
 
 		} catch (Exception e) {
-			throw new RuntimeError("Unparseable bigDecimal: %s", value);
+			throw new RuntimeError("Unparseable BigDecimal: %s", value);
 		}
 	}
 
-	public static BigDecimal toBigDecimal(float value, int scale) {
+	public static BigDecimal toBigDecimal(Float value, int scale) {
+
+		if (value == null) {
+			return null;
+		}
 
 		BigDecimal bdValue = new BigDecimal(value);
 
 		return bdValue.setScale(scale, BigDecimal.ROUND_HALF_UP);
 	}
 
-	public static BigDecimal toBigDecimal(float value) {
+	public static BigDecimal toBigDecimal(Float value) {
+
+		if (value == null) {
+			return null;
+		}
 
 		return toBigDecimal(value, DEFAULT_SCALE);
 	}
 
-	public static BigDecimal toBigDecimal(double value, int scale) {
+	public static BigDecimal toBigDecimal(Double value, int scale) {
+
+		if (value == null) {
+			return null;
+		}
 
 		BigDecimal bdAmount = new BigDecimal(value);
 
 		return bdAmount.setScale(scale, BigDecimal.ROUND_HALF_UP);
 	}
 
-	public static BigDecimal toBigDecimal(double value) {
+	public static BigDecimal toBigDecimal(Double value) {
+
+		if (value == null) {
+			return null;
+		}
 
 		return toBigDecimal(value, DEFAULT_SCALE);
 	}
 
-	public static String format(float value) {
+	public static String toString(float value) {
 
 		if (value == (long) value) {
-			return String.format("%d", (long) value);
+			return Text.printf("%d", (long) value);
 		} else {
-			return String.format("%s", value);
+			return Text.printf("%s", value);
 		}
 	}
 
-	public static String format(double value) {
+	public static String toString(Float value) {
+
+		if (value == null) {
+			return Text.EMPTY_STRING;
+		}
+
+		return toString((float) value);
+	}
+
+	public static String toString(double value) {
 
 		if (value == (long) value) {
-			return String.format("%d", (long) value);
+			return Text.printf("%d", (long) value);
 		} else {
-			return String.format("%s", value);
+			return Text.printf("%s", value);
 		}
+	}
+
+	public static String toString(Double value) {
+
+		if (value == null) {
+			return Text.EMPTY_STRING;
+		}
+
+		return toString((double) value);
+	}
+
+	public static String toString(Float value, int scale) {
+
+		return toString(toDouble(value), scale);
+	}
+
+	public static String toString(Double value, int scale) {
+
+		if (value == null) {
+			return Text.EMPTY_STRING;
+		}
+
+		String format = Text.printf("%%.%df", scale);
+
+		return Text.printf(format, value);
 	}
 
 }

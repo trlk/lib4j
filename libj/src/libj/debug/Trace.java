@@ -12,12 +12,12 @@ public class Trace {
 	public static final char EXCEPTION = 'E';
 
 	// enable flag
-	private static boolean isEnabled = Log.getLevel() == Log.TRACE;
+	private static boolean isEnabled = Log.isLoggable(Log.Level.TRACE);
 
 	public static void enable() {
 
 		isEnabled = true;
-		Log.setLevel(Log.TRACE);
+		Log.setLevel(Log.Level.TRACE);
 
 		trace(TEXT, Stack.prevTrace(), "Tracing is enabled");
 	}
@@ -27,8 +27,8 @@ public class Trace {
 		trace(TEXT, Stack.prevTrace(), "Tracing is disabled");
 
 		isEnabled = false;
-		if (Log.isLevel(Log.TRACE)) {
-			Log.setLevel(Log.DEFAULT);
+		if (Log.isLoggable(Log.Level.TRACE)) {
+			Log.setLevel(Log.DEFAULT_LEVEL);
 		}
 	}
 

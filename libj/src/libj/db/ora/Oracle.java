@@ -6,6 +6,7 @@ package libj.db.ora;
  * Oracle DB Library
  */
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -33,243 +34,239 @@ public class Oracle extends Database {
 	public static final Integer ORA_USER_TIMEOUT = 20999;
 
 	// jdbc driver class
-	public static String DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
+	public static final String DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
 
-	// формат даты/времени по-умолчанию
-	public static String DATE_FORMAT = "dd.mm.yyyy";
-	public static String TIME_FORMAT = "hh24:mm:ss";
+	enum Mode {
+		DIRECT, POOL
+	};
 
 	// переменные
+	private Mode mode;
+	private Boolean isAutoCommit = null; // driver defaults
+	private Boolean isAutoClose = false; // disabled by default
+
+	// формат даты/времени по-умолчанию
+	private String dateFormat = "dd.mm.yyyy";
+	@SuppressWarnings("unused")
+	private String timeFormat = "hh24:mm:ss";
+
 	private String user;
 	private String password;
-	private Connection conn;
-	private Boolean isAutoCloseable = true;
-	private Boolean isMultiConnection = null;
-
-	// конструктор
-	public Oracle() {
-
-		setTimeout(DEFAULT_TIMEOUT);
-	}
 
 	// конструктор
 	public Oracle(String url) {
 
-		this();
-		connect(url);
+		setURL(url);
+
+		if (url.startsWith("jdbc:")) {
+
+			mode = Mode.DIRECT;
+
+		} else if (url.startsWith("jdbc/")) {
+
+			mode = Mode.POOL;
+
+		} else {
+			throw new RuntimeError("Invalid database URL: %s", url);
+		}
 	}
 
 	// конструктор
 	public Oracle(String url, String user, String password) {
 
-		this();
-		connect(url, user, password);
+		this(url);
+
+		this.user = user;
+		this.password = password;
 	}
 
-	// флаг автокоммитта
-	public boolean isAutoCommit() throws SQLException {
-		return conn.getAutoCommit();
-	}
+	// конструктор
+	public Oracle(String host, String sid, String user, String password) {
 
-	// установить флаг автокоммитта
-	public void setAutoCommit(boolean isAutoCommit) throws SQLException {
-		this.conn.setAutoCommit(isAutoCommit);
-	}
-
-	// флаг автозакрытия соединения
-	public boolean isAutoCloseable() {
-		return isAutoCloseable;
-	}
-
-	// установить флаг автозакрытия соединения
-	public void setAutoCloseable(boolean isAutoCloseable) {
-		this.isAutoCloseable = isAutoCloseable;
-	}
-
-	// флаг мультиконнекта
-	public boolean isMultiConnection() {
-		return isMultiConnection;
-	}
-
-	// установить флаг мультиконнекта
-	public void setMultiConnection(boolean isMultiConnection) {
-		this.isMultiConnection = isMultiConnection;
-	}
-
-	// получить коннект
-	public synchronized Connection getConnection() {
-
-		try {
-
-			if (isMultiConnection) {
-
-				connect();
-
-			} else {
-
-				if (conn == null) {
-
-					throw new RuntimeError("Connection not established yet");
-
-				} else if (conn.isClosed()) {
-
-					reconnect();
-				}
-			}
-
-		} catch (Exception e) {
-			throw new RuntimeError(e);
+		if (host.contains(":")) {
+			setURL(Text.printf("jdbc:oracle:thin:@%s/%s", host, sid));
+		} else {
+			setURL(Text.printf("jdbc:oracle:thin:@%s:%s/%s", host, 1521, sid));
 		}
 
-		return conn;
-	}
-
-	// получить коннект
-	public synchronized Connection conn() {
-
-		return getConnection();
-	}
-
-	// подключиться
-	public synchronized void connect(String url) {
-
-		this.url = url;
-
-		connect();
-	}
-
-	// подключиться
-	public synchronized void connect(String url, String user, String password) {
-
-		this.url = url;
 		this.user = user;
 		this.password = password;
 
-		connect();
+		mode = Mode.DIRECT;
 	}
 
-	// подключиться к базе
-	public synchronized void connect(String host, String sid, String user, String password) {
+	// флаг автокоммитта
+	public Boolean isAutoCommit() {
 
-		String url;
-
-		if (host.contains(":")) {
-			url = Text.printf("jdbc:oracle:thin:@%s/%s", host, sid);
-		} else {
-			url = Text.printf("jdbc:oracle:thin:@%s:%s/%s", host, 1521, sid);
-		}
-
-		connect(url, user, password);
+		return isAutoCommit;
 	}
 
-	// подключиться
-	public synchronized void connect() {
+	// установить флаг автокоммитта
+	public void setAutoCommit(Boolean isAutoCommit) {
+
+		this.isAutoCommit = isAutoCommit;
+	}
+
+	// флаг рекурсивного закрытия
+	public Boolean isAutoClose() {
+
+		return isAutoClose;
+	}
+
+	// установить флаг рекурсивного закрытия
+	public void setAutoClose(Boolean isAutoClose) {
+
+		this.isAutoClose = isAutoClose;
+	}
+
+	// получить коннект
+	public Connection getConnection() {
+
+		Connection connection = null;
 
 		try {
 
-			if (conn != null && !isMultiConnection) {
-				disconnect();
-			}
-
 			if (url == null) {
 
-				throw new RuntimeError("Database URL not specified");
+				throw new RuntimeError("Database URL is not specified");
 
-			} else if (url.startsWith("jdbc:")) {
+			} else if (mode == Mode.DIRECT) {
 
 				Class.forName(DRIVER_CLASS);
 
 				// получаем коннект
-				conn = DriverManager.getConnection(url, user, password);
+				connection = DriverManager.getConnection(url, user, password);
 
-				// флаг мультиконнекта				
-				if (isMultiConnection == null) {
-					setMultiConnection(false);
-				}
-
-			} else if (url.startsWith("jdbc/")) {
+			} else if (mode == Mode.POOL) {
 
 				String jndiURL = Text.sprintf("java:comp/env/%s", url);
 				DataSource ds = (DataSource) new InitialContext().lookup(jndiURL);
 
 				// получаем коннект
-				conn = ds.getConnection();
-
-				// флаг мультиконнекта
-				if (isMultiConnection == null) {
-					setMultiConnection(true);
-				}
+				connection = ds.getConnection();
 
 			} else {
-				throw new RuntimeError("Invalid database URL: %s", url);
+				throw new RuntimeError("Invalid connection mode: %s", mode.toString());
 			}
 
-			// подключились
-			Log.trace("Connected: autoCommit=%b, multiConnection=%b, autoCloseable=%b", isAutoCommit(),
-					isMultiConnection(), isAutoCloseable());
+			int sid = getSID(connection);
+
+			Log.debug("(%s) Connected to %s", sid, getBanner(connection));
+
+			// режим автокоммита
+			if (isAutoCommit != null) {
+
+				connection.setAutoCommit(isAutoCommit);
+				Log.debug("(%s) AutoCommit: %b", sid, isAutoCommit);
+
+			} else {
+				Log.debug("(%s) AutoCommit: default", sid);
+			}
 
 			// установим параметры сессии
-			alterSession("NLS_DATE_FORMAT", DATE_FORMAT);
+			alterSession(connection, "NLS_DATE_FORMAT", dateFormat);
 
 		} catch (Exception e) {
 
-			disconnect();
+			close(connection);
 			throw new RuntimeError(e);
 		}
+
+		return connection;
 	}
 
-	// отключиться от базы
-	public synchronized void disconnect() {
+	// получить коннект
+	public Connection conn() {
+
+		return getConnection();
+	}
+
+	public int getSID(Connection connection) {
+
+		CallableStatement q = null;
 
 		try {
 
-			if (conn != null && !conn.isClosed()) {
+			q = connection.prepareCall("begin select sys_context('userenv','sid') into :1 from dual; end;");
 
-				conn.rollback();
-				conn.close();
-			}
+			q.registerOutParameter(1, Types.ORA_INTEGER);
+			q.execute();
 
-		} catch (Exception e) {
+			return q.getInt(1);
 
-			throw new RuntimeError(e);
+		} catch (SQLException e) {
+
+			Log.warn(e);
+			return 0;
+
+		} finally {
+			close(q, false);
 		}
 	}
 
-	// переподключиться
-	public void reconnect() {
+	public String getBanner(Connection connection) {
 
-		disconnect();
-		connect();
+		String banner = null;
+		PreparedStatement q = null;
+
+		try {
+
+			q = connection.prepareStatement("select banner from sys.v_$version");
+
+			ResultSet rs = q.executeQuery();
+
+			if (rs.next()) {
+				banner = rs.getString(1);
+			}
+
+			close(rs, false);
+
+		} catch (SQLException e) {
+
+			Log.warn(e);
+
+		} finally {
+			close(q, false);
+		}
+
+		return banner;
+	}
+
+	public int getSID(Statement statement) throws SQLException {
+
+		return getSID(statement.getConnection());
 	}
 
 	// commit
-	public void commit() throws SQLException {
+	public void commit(Connection connection) throws SQLException {
 
 		Trace.point();
 
-		if (conn != null && !conn.isClosed()) {
+		if (connection != null && !connection.isClosed()) {
 
-			conn.commit();
+			connection.commit();
+			Log.trace("(%s) Commit competed", getSID(connection));
 		}
 	}
 
 	// rollback
-	public void rollback() throws SQLException {
+	public void rollback(Connection connection) throws SQLException {
 
 		Trace.point();
 
-		if (conn != null && !conn.isClosed()) {
+		if (connection != null && !connection.isClosed()) {
 
-			conn.rollback();
+			connection.rollback();
+			Log.trace("(%s) Rollback competed", getSID(connection));
 		}
 	}
 
 	// prepare statement
-	public PreparedStatement prepare(String sql, Object... params) throws SQLException {
+	public PreparedStatement prepare(Connection connection, String sql, Object... params) throws SQLException {
 
 		Trace.point(sql, params);
 
-		PreparedStatement q = conn().prepareStatement(sql);
+		PreparedStatement q = connection.prepareStatement(sql);
 
 		for (int i = 0; i < params.length; i++) {
 
@@ -298,7 +295,7 @@ public class Oracle extends Database {
 	// execute statement
 	public void execute(NamedStatement q) throws SQLException {
 
-		Trace.point(q.getQuery());
+		Trace.point(q.getQuery().toString());
 
 		try {
 
@@ -312,11 +309,11 @@ public class Oracle extends Database {
 	}
 
 	// execute statement
-	public void execute(String sqlStatement) throws SQLException {
+	public void execute(Connection connection, String sqlStatement) throws SQLException {
 
 		Trace.point(sqlStatement);
 
-		PreparedStatement q = conn.prepareStatement(sqlStatement);
+		PreparedStatement q = connection.prepareStatement(sqlStatement);
 
 		execute(q);
 	}
@@ -374,28 +371,12 @@ public class Oracle extends Database {
 	}
 
 	// alter session
-	public void alterSession(String param, String value) throws SQLException {
+	public void alterSession(Connection connection, String param, String value) throws SQLException {
 
 		Trace.point(param, value);
 
-		Statement sql = conn.createStatement();
+		Statement sql = connection.createStatement();
 		sql.execute(Text.printf("alter session set %s='%s'", param, value));
-	}
-
-	// удалить все строки таблицы
-	public void deleteTable(String table) throws SQLException {
-
-		Trace.point(table);
-
-		execute("delete from " + table);
-	}
-
-	// удалить все строки таблицы	
-	public void truncateTable(String table) throws SQLException {
-
-		Trace.point(table);
-
-		execute("truncate table " + table);
 	}
 
 	// текст ошибки Oracle без стека
@@ -483,11 +464,11 @@ public class Oracle extends Database {
 	}
 
 	// executeQuery
-	public ResultSet executeQuery(String sqlStatement) throws SQLException {
+	public ResultSet executeQuery(Connection connection, String sqlStatement) throws SQLException {
 
 		Trace.point(sqlStatement);
 
-		PreparedStatement q = conn.prepareStatement(sqlStatement);
+		PreparedStatement q = connection.prepareStatement(sqlStatement);
 
 		return executeQuery(q);
 	}
@@ -495,7 +476,7 @@ public class Oracle extends Database {
 	// executeQuery
 	public ResultSet executeQuery(PreparedStatement q) throws SQLException {
 
-		Trace.point(q.toString());
+		Trace.point(q);
 
 		try {
 
@@ -512,20 +493,42 @@ public class Oracle extends Database {
 	}
 
 	// close ResultSet
-	public void close(ResultSet q) {
+	public void close(ResultSet q, boolean closeParent) {
 
 		try {
 
-			if (!isAutoCloseable) {
+			Statement stmt = q.getStatement();
+
+			q.close();
+
+			if (closeParent) {
+				close(stmt, closeParent);
+			}
+
+		} catch (SQLException e) {
+			Log.error(e);
+		}
+	}
+
+	// close ResultSet
+	public void close(ResultSet q) {
+		close(q, isAutoClose);
+	}
+
+	// close Statement
+	public void close(Statement q, boolean closeParent) {
+
+		try {
+
+			if (q != null && !q.isClosed()) {
+
+				Connection conn = q.getConnection();
 
 				q.close();
 
-			} else {
-
-				Statement stmt = q.getStatement();
-
-				q.close();
-				close(stmt);
+				if (closeParent) {
+					close(conn);
+				}
 			}
 
 		} catch (SQLException e) {
@@ -535,27 +538,7 @@ public class Oracle extends Database {
 
 	// close Statement
 	public void close(Statement q) {
-
-		try {
-
-			if (q != null && !q.isClosed()) {
-
-				if (!isAutoCloseable) {
-
-					q.close();
-
-				} else {
-
-					Connection conn = q.getConnection();
-
-					q.close();
-					close(conn);
-				}
-			}
-
-		} catch (SQLException e) {
-			Log.error(e);
-		}
+		close(q, isAutoClose);
 	}
 
 	// close NamedStatement
@@ -572,6 +555,8 @@ public class Oracle extends Database {
 		try {
 
 			if (q != null && !q.isClosed()) {
+
+				q.rollback();
 				q.close();
 			}
 
@@ -580,11 +565,23 @@ public class Oracle extends Database {
 		}
 	}
 
-	// instance finalizer
-	protected void finalize() {
+	// close jdbc objects
+	public void close(Object... args) {
 
-		if (conn != null && isAutoCloseable) {
-			close(conn);
+		for (Object object : args) {
+
+			if (object != null) {
+
+				if (object instanceof ResultSet) {
+					close((ResultSet) object);
+				} else if (object instanceof Statement) {
+					close((Statement) object);
+				} else if (object instanceof Connection) {
+					close((Connection) object);
+				} else {
+					throw new RuntimeError("Cannot close %s object", object.getClass().getName());
+				}
+			}
 		}
 	}
 

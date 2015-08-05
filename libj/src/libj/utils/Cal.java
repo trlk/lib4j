@@ -95,8 +95,21 @@ public class Cal {
 		return diff(d0, d1) == 0;
 	}
 
+	public static Date trunc(Date d) {
+
+		Calendar cal = Calendar.getInstance();
+
+		cal.setTime(d);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+
+		return cal.getTime();
+	}
+
 	// дата JAVA->GC
-	public static GregorianCalendar getGC(Date d) {
+	public static GregorianCalendar toGC(Date d) {
 
 		if (d == null) {
 			return null;
@@ -109,7 +122,7 @@ public class Cal {
 	}
 
 	// дата SQL->JAVA
-	public static Date getDate(java.sql.Date d) {
+	public static Date toDate(java.sql.Date d) {
 
 		if (d == null) {
 			return null;
@@ -122,7 +135,7 @@ public class Cal {
 	}
 
 	// дата XML->JAVA
-	public static Date getDate(XMLGregorianCalendar d) {
+	public static Date toDate(XMLGregorianCalendar d) {
 
 		if (d == null) {
 			return null;
@@ -132,7 +145,7 @@ public class Cal {
 	}
 
 	// дата GC->JAVA
-	public static Date getDate(GregorianCalendar gc) {
+	public static Date toDate(GregorianCalendar gc) {
 
 		if (gc == null) {
 			return null;
@@ -141,8 +154,24 @@ public class Cal {
 		return gc.getTime();
 	}
 
+	// преобразование строки в дату согласно формату
+	public static Date toDate(String text, String format) {
+
+		if (Text.isEmpty(text)) {
+			return null;
+		}
+
+		try {
+
+			return new SimpleDateFormat(format).parse(text);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable date: %s", text);
+		}
+	}
+
 	// дата JAVA->XML
-	public static XMLGregorianCalendar getXmlDate(Date d) {
+	public static XMLGregorianCalendar toXMLDate(Date d) {
 
 		if (d == null) {
 			return null;
@@ -164,7 +193,7 @@ public class Cal {
 	}
 
 	// дата SQL->XML
-	public static XMLGregorianCalendar getXmlDate(java.sql.Date d) {
+	public static XMLGregorianCalendar toXMLDate(java.sql.Date d) {
 
 		if (d == null) {
 			return null;
@@ -186,7 +215,7 @@ public class Cal {
 	}
 
 	// дата GC->XML
-	public static XMLGregorianCalendar getXmlDate(GregorianCalendar gc) {
+	public static XMLGregorianCalendar toXMLDate(GregorianCalendar gc) {
 
 		if (gc == null) {
 			return null;
@@ -205,7 +234,7 @@ public class Cal {
 	}
 
 	// дата XML->SQL
-	public static java.sql.Date getSqlDate(XMLGregorianCalendar d) {
+	public static java.sql.Date toSQLDate(XMLGregorianCalendar d) {
 
 		if (d == null) {
 			return null;
@@ -218,7 +247,7 @@ public class Cal {
 	}
 
 	// дата JAVA->SQL
-	public static java.sql.Date getSqlDate(Date d) {
+	public static java.sql.Date toSQLDate(Date d) {
 
 		if (d == null) {
 			return null;
@@ -229,8 +258,25 @@ public class Cal {
 		return r;
 	}
 
+	// преобразование строки в дату согласно формату
+	public static java.sql.Date toSQLDate(String text, String format) {
+
+		if (Text.isEmpty(text)) {
+			return null;
+		}
+
+		try {
+
+			return toSQLDate(new SimpleDateFormat(format).parse(text));
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable date: %s", text);
+		}
+
+	}
+
 	// дата JAVA->SQL
-	public static java.sql.Time getSqlTime(Date d) {
+	public static java.sql.Time toSQLTime(Date d) {
 
 		if (d == null) {
 			return null;
@@ -242,7 +288,7 @@ public class Cal {
 	}
 
 	// дата+время JAVA->SQL
-	public static java.sql.Timestamp getSqlTimestamp(Date d) {
+	public static java.sql.Timestamp toSQLTimestamp(Date d) {
 
 		if (d == null) {
 			return null;
@@ -253,49 +299,16 @@ public class Cal {
 		return r;
 	}
 
-	// преобразование строки в дату согласно формату
-	public static Date toDate(String text, String format) {
-
-		if (text == null) {
-			return null;
-		}
-
-		try {
-
-			return new SimpleDateFormat(format).parse(text);
-
-		} catch (Exception e) {
-			throw new RuntimeError("Unparseable date: %s", text);
-		}
-	}
-
-	// преобразование строки в дату согласно формату
-	public static java.sql.Date toSqlDate(String text, String format) {
-
-		if (text == null) {
-			return null;
-		}
-
-		try {
-
-			return getSqlDate(new SimpleDateFormat(format).parse(text));
-
-		} catch (Exception e) {
-			throw new RuntimeError("Unparseable date: %s", text);
-		}
-
-	}
-
 	// преобразование строки в дату+время согласно формату
-	public static java.sql.Timestamp toSqlTimestamp(String text, String format) {
+	public static java.sql.Timestamp toSQLTimestamp(String text, String format) {
 
-		if (text == null) {
+		if (Text.isEmpty(text)) {
 			return null;
 		}
 
 		try {
 
-			return getSqlTimestamp(new SimpleDateFormat(format).parse(text));
+			return toSQLTimestamp(new SimpleDateFormat(format).parse(text));
 
 		} catch (ParseException e) {
 			throw new RuntimeError("Unparseable timestamp: %s", text);
@@ -304,6 +317,10 @@ public class Cal {
 
 	// форматирование даты
 	public static String formatDate(Date date, String format) {
+
+		if (date == null) {
+			return null;
+		}
 
 		try {
 
@@ -319,50 +336,62 @@ public class Cal {
 	}
 
 	// форматирование даты
-	public static String formatDate(GregorianCalendar gc, String format) {
+	public static String formatDate(GregorianCalendar date, String format) {
+
+		if (date == null) {
+			return null;
+		}
 
 		try {
 
 			if (format != null) {
-				return new SimpleDateFormat(format).format(gc.getTime());
+				return new SimpleDateFormat(format).format(date.getTime());
 			} else {
-				return gc.toString();
+				return date.toString();
 			}
 
 		} catch (Exception e) {
-			throw new RuntimeError("%s: %s, format: %s", e.getMessage(), gc.toString(), format);
+			throw new RuntimeError("%s: %s, format: %s", e.getMessage(), date.toString(), format);
 		}
 	}
 
 	public static long millisBetween(Date d0, Date d1) {
+
 		return d0.getTime() - d1.getTime();
 	}
 
 	public static long secondsBetween(Date d0, Date d1) {
+
 		return millisBetween(d0, d1) / MILLIS_PER_SECOND;
 	}
 
 	public static long minutesBetween(Date d0, Date d1) {
+
 		return secondsBetween(d0, d1) / SECONDS_PER_MINUTE;
 	}
 
 	public static long hoursBetween(Date d0, Date d1) {
+
 		return secondsBetween(d0, d1) / SECONDS_PER_HOUR;
 	}
 
 	public static long daysBetween(Date d0, Date d1) {
+
 		return secondsBetween(d0, d1) / SECONDS_PER_DAY;
 	}
 
 	public static Float minutesDiff(Date d0, Date d1) {
+
 		return new Float(millisBetween(d0, d1)) / MILLIS_PER_MINUTE;
 	}
 
 	public static Float hoursDiff(Date d0, Date d1) {
+
 		return new Float(secondsBetween(d0, d1)) / SECONDS_PER_HOUR;
 	}
 
 	public static Float daysDiff(Date d0, Date d1) {
+
 		return new Float(secondsBetween(d0, d1)) / SECONDS_PER_DAY;
 	}
 
@@ -396,19 +425,6 @@ public class Cal {
 
 		cal.setTime(d);
 		cal.add(Calendar.MONTH, months);
-
-		return cal.getTime();
-	}
-
-	public static Date trunc(Date d) {
-
-		Calendar cal = Calendar.getInstance();
-
-		cal.setTime(d);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
 
 		return cal.getTime();
 	}
