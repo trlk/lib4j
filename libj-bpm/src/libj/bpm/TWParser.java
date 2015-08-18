@@ -1,6 +1,7 @@
 package libj.bpm;
 
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,7 @@ import javax.xml.transform.stream.StreamResult;
 import libj.debug.Debug;
 import libj.debug.Log;
 import libj.debug.Stack;
-import libj.error.Throw;
+import libj.error.RuntimeError;
 import libj.utils.Cal;
 import libj.utils.Text;
 import libj.utils.Xml;
@@ -59,10 +60,11 @@ public class TWParser {
 
 		Document doc;
 
-		if (parentNode instanceof Document)
+		if (parentNode instanceof Document) {
 			doc = (Document) parentNode;
-		else
+		} else {
 			doc = parentNode.getOwnerDocument();
+		}
 
 		Element node;
 
@@ -99,6 +101,7 @@ public class TWParser {
 
 			// поехали...
 			if (isList) {
+
 				TWList list = (TWList) object;
 
 				int size = list.getArraySize();
@@ -121,6 +124,7 @@ public class TWParser {
 				}
 
 				if (set != null) {
+
 					for (String propName : set) {
 						twParse(obj.getPropertyValue(propName), node, propName);
 					}
@@ -130,17 +134,18 @@ public class TWParser {
 
 				node.setAttribute(Xml.ATTR_NAME_TYPE, java.util.Date.class.getSimpleName());
 
-				java.util.Date dateObject = ((GregorianCalendar) object).getTime();
+				Date dateObject = ((GregorianCalendar) object).getTime();
 
-				node.setTextContent(fmtDate(dateObject));
+				node.setTextContent(Cal.formatDate(dateObject, Xml.DATETIME_FORMAT));
+				node.setAttribute("date", fmtDate(dateObject));
 
-				if (dateFormat != null)
+				if (dateFormat != null) {
 					node.setAttribute("dateFormat", dateFormat);
+				}
 
 				if (timeFormat != null) {
 
 					node.setAttribute("time", fmtTime(dateObject));
-
 					node.setAttribute("timeFormat", timeFormat);
 				}
 
@@ -153,7 +158,7 @@ public class TWParser {
 				node.setAttribute(Xml.ATTR_NAME_TYPE, Double.class.getSimpleName());
 
 				Double doubleObject = (Double) object;
-				node.setTextContent(fmtDouble(doubleObject));
+				node.setTextContent(/*fmtDouble(*/doubleObject.toString());
 
 				// amount in words
 				node.setAttribute("words", fmtDoubleInWords(doubleObject));
@@ -202,8 +207,9 @@ public class TWParser {
 
 	public Document createDom(TWObject object) {
 
-		if (object == null)
-			Throw.runtimeException("%s: Object is null", Stack.thisMethodName());
+		if (object == null) {
+			throw new RuntimeError("%s: Object is null", Stack.thisMethodName());
+		}
 
 		try {
 
@@ -218,16 +224,16 @@ public class TWParser {
 		}
 
 		catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeException(e);
 		}
 
-		return null;
 	}
 
 	public Document createDom(TWObject object, String outRootName) {
 
-		if (object == null)
-			Throw.runtimeException("%s: Object is null", Stack.thisMethodName());
+		if (object == null) {
+			throw new RuntimeError("%s: Object is null", Stack.thisMethodName());
+		}
 
 		try {
 
@@ -244,13 +250,11 @@ public class TWParser {
 		}
 
 		catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeException(e);
 		}
-
-		return null;
 	}
 
-	public Map<String, String> createMap(TWObject object) {
+	public Map<String, Object> createMap(TWObject object) {
 
 		try {
 
@@ -260,10 +264,8 @@ public class TWParser {
 		}
 
 		catch (Exception e) {
-			Throw.runtimeException(e);
+			throw new RuntimeException(e);
 		}
-
-		return null;
 	}
 
 	public void serialize(TWObject object, StreamResult stream) {

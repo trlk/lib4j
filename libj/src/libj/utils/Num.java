@@ -308,9 +308,9 @@ public class Num {
 	public static String toString(float value) {
 
 		if (value == (long) value) {
-			return Text.printf("%d", (long) value);
+			return Text.sprintf("%d", (long) value);
 		} else {
-			return Text.printf("%s", value);
+			return Text.sprintf("%s", value);
 		}
 	}
 
@@ -326,9 +326,9 @@ public class Num {
 	public static String toString(double value) {
 
 		if (value == (long) value) {
-			return Text.printf("%d", (long) value);
+			return Text.sprintf("%d", (long) value);
 		} else {
-			return Text.printf("%s", value);
+			return Text.sprintf("%s", value);
 		}
 	}
 
@@ -352,9 +352,9 @@ public class Num {
 			return Text.EMPTY_STRING;
 		}
 
-		String format = Text.printf("%%.%df", scale);
+		String format = Text.sprintf("%%.%df", scale);
 
-		return Text.printf(format, value);
+		return Text.sprintf(format, value);
 	}
 
 }

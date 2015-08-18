@@ -83,11 +83,11 @@ public class SDOUtils {
 
 		if (bo == null || node == null) {
 
-			Log.dtrace("Argument is null, skipped...");
+			Log.devel("Argument is null, skipped...");
 
 		} else {
 
-			Log.dtrace("### Node: %s ###", node.getName());
+			Log.devel("### Node: %s ###", node.getName());
 
 			Type type = bo.getType();
 			Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
@@ -100,7 +100,7 @@ public class SDOUtils {
 				boolean isList = prop.isMany();
 				boolean isContainer = prop.isContainment();
 
-				Log.dtrace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+				Log.devel("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
 
 				if (isList) {
 

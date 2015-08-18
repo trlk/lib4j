@@ -208,7 +208,7 @@ public class XDocument extends XNode {
 
 							if (isList) {
 
-								Log.dtrace("List detected: %s/%s[]", nodeName, childName);
+								Log.devel("List detected: %s/%s[]", nodeName, childName);
 
 								XDataNode childNode = dataNode.get(childName);
 

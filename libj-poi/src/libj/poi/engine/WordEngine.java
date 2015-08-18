@@ -172,7 +172,7 @@ public class WordEngine extends Engine {
 			// comma separated tags
 			if (this.dataMode == DataMode.COMMA || this.dataMode == DataMode.MIXED) {
 
-				Map<String, String> dataMap = Xml.createMap(this.data, Debug.isEnabled());
+				Map<String, Object> dataMap = Xml.createMap(this.data, Debug.isEnabled());
 
 				// fetch data
 				for (Tag tag : taglist) {

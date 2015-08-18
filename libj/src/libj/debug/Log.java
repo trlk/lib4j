@@ -1,96 +1,92 @@
 package libj.debug;
 
-import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 
-import libj.error.RuntimeError;
-import libj.utils.Cal;
-import libj.utils.Text;
+import libj.log.Format;
+import libj.log.Level;
+import libj.log.Logger;
 
-@SuppressWarnings("serial")
-public class Log implements Serializable {
+public class Log {
 
-	public enum Level {
-		NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, DTRACE
-	}
-
-	public enum Format {
-		NONE, BRIEF, FULL
-	};
+	// log levels
+	public static Level NONE = Level.NONE;
+	public static Level FATAL = Level.FATAL;
+	public static Level ERROR = Level.ERROR;
+	public static Level WARN = Level.WARN;
+	public static Level INFO = Level.INFO;
+	public static Level DEBUG = Level.DEBUG;
+	public static Level TRACE = Level.TRACE;
+	public static Level DEVEL = Level.DEVEL;
 
 	// constants
-	public static final Level DEFAULT_LEVEL = Level.INFO;
-	public static final Format DEFAULT_FORMAT = Format.BRIEF;
-	public static final String DEFAULT_INSTANCE_NAME = "DefaultInstance";
+	public static final String DEFAULT_NAME = Logger.DEFAULT_NAME;
+	public static final Level DEFAULT_LEVEL = Logger.DEFAULT_LEVEL;
 
 	// logger instance
-	private static volatile Log INSTANCE;
-	private static volatile String instanceName = DEFAULT_INSTANCE_NAME;
+	private static volatile Logger INSTANCE;
 
-	// private variables
-	private Level level = DEFAULT_LEVEL;
-	private Format outFormat = Format.BRIEF;
-	private Format fileFormat = Format.FULL;
-	private String fileName;
-	private boolean forwardLog4j = false;
+	private Log() {
+		/* this is self-create singletone, creation is not allowed */
+	}
 
-	// streams
-	transient private PrintStream outStream;
-	transient private PrintStream errStream;
-	transient private PrintStream fileStream;
-
-	public static Log getInstance() {
+	private static Logger instance() {
 
 		if (INSTANCE == null) {
-			create();
+			init(DEFAULT_NAME);
 		}
 
 		return INSTANCE;
 	}
 
-	public static String getInstanceName() {
-		return instanceName;
-	}
+	public static synchronized Logger init(String name) {
 
-	public static String getJNDI() {
-		return Text.sprintf(Log.class.getName() + "." + getInstanceName());
-	}
+		if (Logger.isConfigurable()) {
 
-	public static synchronized void init(String instanceName) {
+			INSTANCE = new Logger(name);
 
-		Log.instanceName = instanceName;
-		create();
-	}
+		} else {
 
-	private static synchronized void create() {
+			// lookup, if has no configuration
+			INSTANCE = lookup(name);
 
-		INSTANCE = lookup();
-
-		if (INSTANCE == null) {
-			INSTANCE = new Log();
+			// create one, if not found
+			if (INSTANCE == null) {
+				INSTANCE = new Logger(name);
+			}
 		}
 
-		reconf(); // apply configuration
+		info("Logger instance '%s' has been initialized", getName());
+
+		return INSTANCE;
 	}
 
-	private static Log lookup() {
+	public static Logger lookup(String name) {
+
+		String loggerJNDI = Logger.getJNDI(name);
 
 		try {
 
 			InitialContext ctx = new InitialContext();
-			return (Log) ctx.lookup(getJNDI());
+
+			Logger instance = (Logger) ctx.lookup(loggerJNDI);
+
+			if (instance == null) {
+				throw new NullPointerException();
+			}
+
+			instance.configure(); // this is very important
+			instance.info("Logger found in context: %s", instance.getJNDI());
+
+			return instance;
 
 		} catch (Exception e) {
-			/*suppress*/
+			/* suppress */
 		}
 
 		return null;
@@ -98,434 +94,283 @@ public class Log implements Serializable {
 
 	public static synchronized void ctxbind() throws NamingException {
 
+		if (INSTANCE == null) {
+			throw new RuntimeException("Logger is not initialized");
+		}
+
 		InitialContext ctx = new InitialContext();
 
 		try {
 
-			ctx.bind(getJNDI(), getInstance());
+			ctx.bind(INSTANCE.getJNDI(), INSTANCE);
 
 		} catch (NameAlreadyBoundException e) {
 
-			ctx.rebind(getJNDI(), getInstance());
+			ctx.rebind(INSTANCE.getJNDI(), INSTANCE);
 		}
 
-		info("Logger bind complete: instanceName:=%s, JNDI=%s", getInstanceName(), getJNDI());
+		info("Logger bind complete: instanceName:=%s, JNDI=%s", INSTANCE.getName(), INSTANCE.getJNDI());
 	}
 
-	private static synchronized void reconf() {
+	public static Logger getInstance() {
 
-		if (INSTANCE.outStream == null) {
-			INSTANCE.outStream = System.out;
-		}
-
-		if (INSTANCE.errStream == null) {
-			INSTANCE.errStream = System.err;
-		}
-
-		if (INSTANCE.fileName == null && INSTANCE.fileStream != null) {
-
-			INSTANCE.fileStream.close();
-			INSTANCE.fileStream = null;
-		}
-
-		if (INSTANCE.fileName != null && INSTANCE.fileStream == null) {
-
-			try {
-
-				info("Logging to file %s", INSTANCE.fileName);
-				INSTANCE.fileStream = new PrintStream(new FileOutputStream(INSTANCE.fileName, true));
-
-			} catch (Exception e) {
-
-				INSTANCE.fileName = null;
-				INSTANCE.fileStream = null;
-				error(e);
-			}
-		}
+		return instance();
 	}
 
-	public static Level getLevel() {
+	public static boolean isInitialized() {
 
-		return getInstance().level;
-	}
-
-	public static void setLevel(Level level) {
-
-		if (getInstance().level != level) {
-
-			getInstance().level = level;
-
-			info("Logging level was changed to '%s'", level.name());
-		}
-	}
-
-	public static void setLevel(int level) {
-
-		setLevel(Level.values()[level]);
-	}
-
-	public static boolean isLoggable(Level level, Log instance) {
-
-		return level.compareTo(instance.level) <= 0;
+		return INSTANCE != null;
 	}
 
 	public static boolean isLoggable(Level level) {
 
-		return isLoggable(level, getInstance());
+		return instance().isLoggable(level);
+	}
+
+	public static String getName() {
+		return instance().getName();
+	}
+
+	public static Level getLevel() {
+
+		return instance().getLevel();
+	}
+
+	public static void setLevel(Level level) {
+
+		instance().setLevel(level);
+	}
+
+	public static void setLevel(int level) {
+
+		instance().setLevel(level);
 	}
 
 	public static PrintStream getOutStream() {
 
-		return getInstance().outStream;
+		return instance().getOutStream();
 	}
 
 	public static void setOutStream(PrintStream outStream) {
 
-		Log instance = getInstance();
-
-		// outStream
-		instance.outStream = outStream;
-
-		// errStream
-		if (instance.errStream == instance.outStream) {
-			instance.errStream = null;
-		}
+		instance().setOutStream(outStream);
 	}
 
 	public static void setOutStream(PrintStream outStream, PrintStream errStream) {
 
-		Log instance = getInstance();
-
-		// outStream
-		instance.outStream = outStream;
-
-		// errStream
-		if (errStream != instance.outStream) {
-			instance.errStream = errStream;
-		} else {
-			instance.errStream = null;
-		}
+		instance().setOutStream(outStream, errStream);
 	}
 
 	public static Format getOutFormat() {
 
-		return getInstance().outFormat;
+		return instance().getOutFormat();
 	}
 
-	public static void setOutFormat(Format format) {
+	public static void setOutFormat(Format outFormat) {
 
-		getInstance().outFormat = format;
+		instance().setOutFormat(outFormat);
 	}
 
 	public static Format getFileFormat() {
 
-		return getInstance().fileFormat;
+		return instance().getFileFormat();
 	}
 
-	public static void setFileFormat(Format format) {
+	public static void setFileFormat(Format fileFormat) {
 
-		getInstance().fileFormat = format;
+		instance().setOutFormat(fileFormat);
 	}
 
 	public static String getFileName() {
 
-		return getInstance().fileName;
+		return instance().getFileName();
 	}
 
 	public static void setFileName(String fileName) {
 
-		if (fileName == null || fileName.isEmpty()) {
-			getInstance().fileName = null;
-		} else {
-			getInstance().fileName = fileName;
-		}
-
-		reconf(); // apply configuration
+		instance().setFileName(fileName);
 	}
 
 	public static void setForwardLog4j(boolean forwardLog4j) {
 
-		getInstance().forwardLog4j = forwardLog4j;
-		info("Forwading to Log4j is enabled");
-	}
-
-	private static void print(PrintStream stream, String text) {
-
-		if (stream != null) {
-
-			try {
-				stream.println(text);
-			} catch (Exception e) {
-				/*suppress*/
-			}
-		}
-	}
-
-	private static void print(PrintStream stream, Object object) {
-
-		if (object != null) {
-			print(object.toString());
-		}
-	}
-
-	private static String format(Format format, Level level, StackTraceElement trace, String text) {
-
-		switch (format) {
-
-		case NONE: {
-
-			return text;
-		}
-
-		case BRIEF: {
-
-			return Text.printf("%s: %s", level.name(), text);
-		}
-
-		case FULL: {
-
-			// full format logging
-			String dateString = Cal.formatDate(Cal.now(), "yyyy-MM-dd HH:mm:ss:SSS");
-			String source = Text.printf("%s:%d", trace.getClassName(), trace.getLineNumber());
-
-			// last part of class name
-			if (source.contains(".")) {
-				source = Text.substr(source, source.lastIndexOf(".") + 2);
-			}
-
-			return Text.printf("%-5s %s %-13.13s %s", level.name(), dateString, source, text);
-		}
-
-		default:
-			throw new RuntimeError("[%d] Unknown format", format);
-		}
-	}
-
-	private static void log(Level level, StackTraceElement trace, Object object) {
-
-		// if text not empty
-		if (object != null) {
-
-			String text = object.toString();
-
-			if (!text.isEmpty()) {
-
-				// get instance
-				Log instance = getInstance();
-
-				// appropriate level?
-				if (isLoggable(level, instance)) {
-
-					String formatedLine = format(instance.outFormat, level, trace, text);
-
-					// stdout
-					print(instance.outStream, formatedLine);
-
-					// stderr
-					if (instance.errStream != instance.outStream && level.compareTo(Level.ERROR) <= 0) {
-
-						print(instance.errStream, formatedLine);
-					}
-
-					// file
-					if (instance.fileStream != null) {
-
-						if (instance.fileFormat != instance.outFormat) {
-
-							formatedLine = format(instance.fileFormat, level, trace, text);
-						}
-
-						print(instance.fileStream, formatedLine);
-					}
-
-					// log4j
-					if (instance.forwardLog4j) {
-
-						try {
-
-							Log4j.proxy(Log.class, trace, level, text);
-
-						} catch (Exception e) {
-
-							instance.forwardLog4j = false;
-							error(e);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private static void log(Level level, StackTraceElement trace, String format, Object... args) {
-
-		log(level, trace, Text.printf(format, args));
-	}
-
-	private static void log(Level level, StackTraceElement trace, Throwable e) {
-
-		log(level, trace, Error.getTextWithTrace(e));
+		instance().setForwardLog4j(forwardLog4j);
 	}
 
 	public static void log(Level level, Object object) {
 
-		log(level, Stack.prevTrace(), object);
+		instance().log(level, Stack.prevTrace(), object);
 	}
 
 	public static void log(Level level, Throwable e) {
 
-		log(level, Stack.prevTrace(), e);
+		instance().log(level, Stack.prevTrace(), e);
 	}
 
 	public static void log(Level level, String format, Object... args) {
 
-		log(level, Stack.prevTrace(), format, args);
+		instance().log(level, Stack.prevTrace(), format, args);
 	}
 
 	public static void print(Object object) {
 
-		print(getInstance().outStream, object);
+		instance().print(object);
 	}
 
 	public static void print(String format, Object... args) {
 
-		print(Text.sprintf(format, args));
+		instance().print(format, args);
 	}
 
 	public static void print(Throwable e) {
 
-		print(Error.getTextWithTrace(e));
+		instance().print(e);
 	}
 
 	public static void fatal(Object object) {
 
-		log(Level.FATAL, Stack.prevTrace(), object);
+		instance().log(FATAL, Stack.prevTrace(), object);
 	}
 
 	public static void fatal(String format, Object... args) {
 
-		log(Level.FATAL, Stack.prevTrace(), format, args);
+		instance().log(FATAL, Stack.prevTrace(), format, args);
 	}
 
 	public static void fatal(Throwable e) {
 
-		log(Level.FATAL, Stack.prevTrace(), e);
+		instance().log(FATAL, Stack.prevTrace(), e);
+	}
+
+	public static void fatal(StackTraceElement trace, Object object) {
+
+		instance().log(FATAL, trace, object);
 	}
 
 	public static void error(Object object) {
 
-		log(Level.ERROR, Stack.prevTrace(), object);
+		instance().log(ERROR, Stack.prevTrace(), object);
 	}
 
 	public static void error(String format, Object... args) {
 
-		log(Level.ERROR, Stack.prevTrace(), format, args);
+		instance().log(ERROR, Stack.prevTrace(), format, args);
 	}
 
 	public static void error(Throwable e) {
 
-		log(Level.ERROR, Stack.prevTrace(), e);
+		instance().log(ERROR, Stack.prevTrace(), e);
+	}
+
+	public static void error(StackTraceElement trace, Object object) {
+
+		instance().log(ERROR, trace, object);
 	}
 
 	public static void warn(Object object) {
 
-		log(Level.WARN, Stack.prevTrace(), object);
+		instance().log(WARN, Stack.prevTrace(), object);
 	}
 
 	public static void warn(String format, Object... args) {
 
-		log(Level.WARN, Stack.prevTrace(), format, args);
+		instance().log(WARN, Stack.prevTrace(), format, args);
 	}
 
 	public static void warn(Throwable e) {
 
-		log(Level.WARN, Stack.prevTrace(), e);
+		instance().log(WARN, Stack.prevTrace(), e);
+	}
+
+	public static void warn(StackTraceElement trace, Object object) {
+
+		instance().log(WARN, trace, object);
 	}
 
 	public static void info(Object object) {
 
-		log(Level.INFO, Stack.prevTrace(), object);
+		instance().log(INFO, Stack.prevTrace(), object);
 	}
 
 	public static void info(String format, Object... args) {
 
-		log(Level.INFO, Stack.prevTrace(), format, args);
+		instance().log(INFO, Stack.prevTrace(), format, args);
 	}
 
 	public static void info(Throwable e) {
 
-		log(Level.INFO, Stack.prevTrace(), e);
+		instance().log(INFO, Stack.prevTrace(), e);
+	}
+
+	public static void info(StackTraceElement trace, Object object) {
+
+		instance().log(INFO, trace, object);
 	}
 
 	public static void debug(Object object) {
 
-		log(Level.DEBUG, Stack.prevTrace(), object);
+		instance().log(DEBUG, Stack.prevTrace(), object);
 	}
 
 	public static void debug(String format, Object... args) {
 
-		log(Level.DEBUG, Stack.prevTrace(), format, args);
+		instance().log(DEBUG, Stack.prevTrace(), format, args);
 	}
 
 	public static void debug(Throwable e) {
 
-		log(Level.DEBUG, Stack.prevTrace(), e);
+		instance().log(DEBUG, Stack.prevTrace(), e);
+	}
+
+	public static void debug(StackTraceElement trace, Object object) {
+
+		instance().log(DEBUG, trace, object);
 	}
 
 	public static void trace(Object object) {
 
-		log(Level.TRACE, Stack.prevTrace(), object);
+		instance().log(TRACE, Stack.prevTrace(), object);
 	}
 
 	public static void trace(String format, Object... args) {
 
-		log(Level.TRACE, Stack.prevTrace(), format, args);
+		instance().log(TRACE, Stack.prevTrace(), format, args);
 	}
 
 	public static void trace(Throwable e) {
 
-		log(Level.TRACE, Stack.prevTrace(), e);
+		instance().log(TRACE, Stack.prevTrace(), e);
 	}
 
 	public static void trace(StackTraceElement trace, Object object) {
 
-		log(Level.TRACE, trace, object);
+		instance().log(TRACE, trace, object);
 	}
 
-	public static void dtrace(Object object) {
+	public static void devel(Object object) {
 
-		log(Level.DTRACE, Stack.prevTrace(), object);
+		instance().log(DEVEL, Stack.prevTrace(), object);
 	}
 
-	public static void dtrace(String format, Object... args) {
+	public static void devel(String format, Object... args) {
 
-		log(Level.DTRACE, Stack.prevTrace(), format, args);
+		instance().log(DEVEL, Stack.prevTrace(), format, args);
 	}
 
-	public static void dtrace(Throwable e) {
+	public static void devel(Throwable e) {
 
-		log(Level.DTRACE, Stack.prevTrace(), e);
+		instance().log(DEVEL, Stack.prevTrace(), e);
 	}
 
-	@SuppressWarnings("all")
-	public static void printMap(Map map) {
+	@SuppressWarnings("rawtypes")
+	public static void printMap(Level level, Map map) {
 
-		// sort data map
-		SortedSet<String> sortedKeys = new TreeSet<String>(map.keySet());
-
-		for (String key : sortedKeys) {
-			info("  %s=%s", key.toString(), map.get(key).toString());
-		}
+		instance().printMap(level, map);
 	}
 
-	@SuppressWarnings("all")
-	public static void printMapList(ArrayList<Map> list) {
+	@SuppressWarnings("rawtypes")
+	public static void printMapList(Level level, List<Map> mapList) {
 
-		Log.info("mapList (size=%d):", list.size());
-
-		for (int i = 0; i < list.size(); i++) {
-			info("item[%d]:", i);
-			printMap(list.get(i));
-		}
+		instance().printMapList(mapList);
 	}
 
 }

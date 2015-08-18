@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -28,7 +29,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import libj.debug.Debug;
-import libj.debug.Log;
 import libj.debug.Stack;
 import libj.error.Throw;
 import libj.xml.XMLSchema;
@@ -84,7 +84,6 @@ public class Xml {
 			return b.parse(inputStream);
 
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -101,7 +100,6 @@ public class Xml {
 			return parse(Stream.newInputStream(inputString.getBytes(charsetName)));
 
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -119,7 +117,6 @@ public class Xml {
 			transformer.transform(domSource, streamResult);
 
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -171,7 +168,6 @@ public class Xml {
 			return xmlOutput.getWriter().toString();
 
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
@@ -218,7 +214,7 @@ public class Xml {
 						String nodeIndex = getAttrValue(n, ATTR_NAME_INDEX);
 
 						if (nodeIndex != null) {
-							nodeName = Text.printf("%s[%s]", nodeName, nodeIndex);
+							nodeName = Text.sprintf("%s[%s]", nodeName, nodeIndex);
 						}
 					}
 
@@ -303,10 +299,10 @@ public class Xml {
 		return Num.toInteger(value);
 	}
 
-	private static Map<String, String> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
+	private static Map<String, Object> createMap(Node node, Boolean putEmptyNodes, char elementDelimiter,
 			char attrDelimiter) {
 
-		Map<String, String> map = new LinkedHashMap<String, String>();
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
 
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 
@@ -324,43 +320,15 @@ public class Xml {
 
 						if (putEmptyNodes || text.length() != 0) {
 
-							map.put(path, text);
+							Object object = XMLSchema.createObject(node);
+							map.put(path, object);
 
-							// xml attributes
-							if (node.hasAttributes()) {
+							// printed (human) text
+							String printedText = getPrintedText(object);
 
-								NamedNodeMap attrs = node.getAttributes();
-
-								for (int i = 0; i < attrs.getLength(); i++) {
-
-									Node attr = attrs.item(i);
-									String attrName = attr.getNodeName();
-									String attrValue = attr.getNodeValue();
-
-									map.put(path + attrDelimiter + attrName, attrValue);
-
-									// printed text
-									if (attrName.equals(Xml.TAG_TYPE)) {
-
-										Object object;
-
-										try {
-											object = XMLSchema.createObject(attrValue, text);
-										} catch (Exception e) {
-											Log.warn(e.getMessage());
-											object = text;
-										}
-
-										String printedText = getPrintedText(object);
-
-										if (Text.isNotEmpty(printedText)) {
-											map.put(path + attrDelimiter + TAG_TEXT, printedText);
-										}
-									}
-								}
+							if (Text.isNotEmpty(printedText)) {
+								map.put(path + attrDelimiter + TAG_TEXT, printedText);
 							}
-
-							map.put(path, text);
 						}
 					}
 
@@ -378,27 +346,27 @@ public class Xml {
 		return map;
 	}
 
-	public static Map<String, String> createMap(Document doc, char elementDelimiter) {
+	public static Map<String, Object> createMap(Document doc, char elementDelimiter) {
 
 		return createMap(doc.getDocumentElement(), PUT_EMPTY_NODES, elementDelimiter, ATTR_DELIMITER);
 	}
 
-	public static Map<String, String> createMap(Document doc, char elementDelimiter, char attrDelimiter) {
+	public static Map<String, Object> createMap(Document doc, char elementDelimiter, char attrDelimiter) {
 
 		return createMap(doc.getDocumentElement(), PUT_EMPTY_NODES, elementDelimiter, attrDelimiter);
 	}
 
-	public static Map<String, String> createMap(Document doc) {
+	public static Map<String, Object> createMap(Document doc) {
 
 		return createMap(doc, PUT_EMPTY_NODES);
 	}
 
-	public static Map<String, String> createMap(Document doc, Boolean putEmptyNodes) {
+	public static Map<String, Object> createMap(Document doc, Boolean putEmptyNodes) {
 
 		return createMap(doc, putEmptyNodes, ELEMENT_DELIMITER, ATTR_DELIMITER);
 	}
 
-	public static Map<String, String> createMap(InputStream inputStream, Boolean putEmptyNodes) {
+	public static Map<String, Object> createMap(InputStream inputStream, Boolean putEmptyNodes) {
 
 		try {
 
@@ -410,19 +378,18 @@ public class Xml {
 		}
 
 		catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static Map<String, String> createMap(InputStream inputStream) {
+	public static Map<String, Object> createMap(InputStream inputStream) {
 		return createMap(inputStream, PUT_EMPTY_NODES);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static ArrayList<Map> createMapList(Document doc, Boolean putEmptyNodes) {
+	public static List<Map> createMapList(Document doc, Boolean putEmptyNodes) {
 
-		ArrayList<Map> list = new ArrayList<Map>();
+		List<Map> list = new ArrayList<Map>();
 
 		try {
 
@@ -433,19 +400,21 @@ public class Xml {
 
 			if (items != null && items.getLength() > 0) {
 
-				for (int i = 0; i < items.getLength(); i++) {
+				for (int n = 0; n < items.getLength(); n++) {
 
-					if (items.item(i).getNodeType() == Node.ELEMENT_NODE) {
+					if (items.item(n).getNodeType() == Node.ELEMENT_NODE) {
 
-						Map<String, String> map = new LinkedHashMap<String, String>();
+						Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-						Element item = (Element) items.item(i);
+						Element item = (Element) items.item(n);
 
 						// parse nodes
 						for (Node node = item.getFirstChild(); node != null; node = node.getNextSibling()) {
 
 							if (node.getNodeType() == Node.ELEMENT_NODE) {
-								map.put(node.getNodeName(), node.getTextContent());
+
+								Object object = XMLSchema.createObject(node);
+								map.put(node.getNodeName(), object);
 							}
 						}
 
@@ -458,7 +427,6 @@ public class Xml {
 		}
 
 		catch (Exception e) {
-			e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 	}

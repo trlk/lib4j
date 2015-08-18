@@ -148,8 +148,8 @@ public class Tag {
 	@Override
 	public String toString() {
 
-		return Text
-				.printf("Tag: brutto=%s; netto=%s; funcName=%s; parts=%s", brutto, netto, funcName, parts.toString());
+		return Text.sprintf("Tag: brutto=%s; netto=%s; funcName=%s; parts=%s", brutto, netto, funcName,
+				parts.toString());
 	}
 
 }

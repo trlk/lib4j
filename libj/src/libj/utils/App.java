@@ -88,16 +88,16 @@ public class App {
 		Properties properties = System.getProperties();
 
 		for (Object p : properties.keySet()) {
-			sb.append(Text.printf("%s=%s\n", p, properties.get(p)));
+			sb.append(Text.sprintf("%s=%s\n", p, properties.get(p)));
 		}
 
 		sb.append("\nAdditional parametes:\n");
 
-		sb.append(Text.printf("mainClassName=%s\n", getMainClassName()));
-		sb.append(Text.printf("currentThreadName=%s\n", getCurrentThreadName()));
-		sb.append(Text.printf("defaultCharset=%s\n", getDefaultCharsetName()));
-		sb.append(Text.printf("hostName=%s\n", Net.thisHostName()));
-		sb.append(Text.printf("hostAddress=%s\n", Net.thisHostAddress()));
+		sb.append(Text.sprintf("mainClassName=%s\n", getMainClassName()));
+		sb.append(Text.sprintf("currentThreadName=%s\n", getCurrentThreadName()));
+		sb.append(Text.sprintf("defaultCharset=%s\n", getDefaultCharsetName()));
+		sb.append(Text.sprintf("hostName=%s\n", Net.thisHostName()));
+		sb.append(Text.sprintf("hostAddress=%s\n", Net.thisHostAddress()));
 
 		Log.info(sb.toString());
 	}
@@ -111,19 +111,19 @@ public class App {
 		// Getting the runtime reference from system
 		Runtime runtime = Runtime.getRuntime();
 
-		sb.append(Text.printf("### Heap utilization statistics [MB] ###\n"));
+		sb.append(Text.sprintf("### Heap utilization statistics [MB] ###\n"));
 
 		// Print used memory
-		sb.append(Text.printf("Used Memory: %d\n", (runtime.totalMemory() - runtime.freeMemory()) / mb));
+		sb.append(Text.sprintf("Used Memory: %d\n", (runtime.totalMemory() - runtime.freeMemory()) / mb));
 
 		// Print free memory
-		sb.append(Text.printf("Free Memory: %d\n", runtime.freeMemory() / mb));
+		sb.append(Text.sprintf("Free Memory: %d\n", runtime.freeMemory() / mb));
 
 		// Print total available memory
-		sb.append(Text.printf("Total Memory: %d\n", runtime.totalMemory() / mb));
+		sb.append(Text.sprintf("Total Memory: %d\n", runtime.totalMemory() / mb));
 
 		// Print Maximum available memory
-		sb.append(Text.printf("Max Memory: %d\n", runtime.maxMemory() / mb));
+		sb.append(Text.sprintf("Max Memory: %d\n", runtime.maxMemory() / mb));
 
 		Log.info(sb.toString());
 	}

@@ -18,7 +18,7 @@ public class RuntimeException2 extends java.lang.RuntimeException {
 
 	public RuntimeException2(String format, Object... args) throws RuntimeException {
 
-		super(Text.printf(format, args));
+		super(Text.format(format, args));
 	}
 
 }

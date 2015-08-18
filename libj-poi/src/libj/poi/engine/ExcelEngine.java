@@ -4,8 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import libj.debug.Debug;
@@ -71,9 +71,9 @@ public class ExcelEngine extends Engine {
 
 		try {
 
-			ArrayList<Map> items = Xml.createMapList(data, Debug.isEnabled());
+			List<Map> items = Xml.createMapList(data, Debug.isEnabled());
 
-			Log.printMapList(items);
+			Log.printMapList(Log.DEBUG, items);
 
 			Map beans = new HashMap();
 			beans.put(Xml.TAG_NAME_ITEMS, items);

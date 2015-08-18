@@ -12,23 +12,30 @@ public class Trace {
 	public static final char EXCEPTION = 'E';
 
 	// enable flag
-	private static boolean isEnabled = Log.isLoggable(Log.Level.TRACE);
+	private static boolean isEnabled = Log.isLoggable(Log.TRACE);
 
 	public static void enable() {
 
-		isEnabled = true;
-		Log.setLevel(Log.Level.TRACE);
+		if (!isEnabled) {
 
-		trace(TEXT, Stack.prevTrace(), "Tracing is enabled");
+			isEnabled = true;
+			Log.setLevel(Log.TRACE);
+
+			trace(TEXT, Stack.prevTrace(), "Tracing is enabled");
+		}
 	}
 
 	public static void disable() {
 
-		trace(TEXT, Stack.prevTrace(), "Tracing is disabled");
+		if (isEnabled) {
 
-		isEnabled = false;
-		if (Log.isLoggable(Log.Level.TRACE)) {
-			Log.setLevel(Log.DEFAULT_LEVEL);
+			isEnabled = false;
+
+			if (Log.isLoggable(Log.TRACE)) {
+
+				trace(TEXT, Stack.prevTrace(), "Tracing is disabled");
+				Log.setLevel(Log.DEFAULT_LEVEL);
+			}
 		}
 	}
 
@@ -41,7 +48,7 @@ public class Trace {
 
 		try {
 
-			return Text.printf("%s.%s:%s", Class.forName(trace.getClassName()).getSimpleName(), trace.getMethodName(),
+			return Text.sprintf("%s.%s:%s", Class.forName(trace.getClassName()).getSimpleName(), trace.getMethodName(),
 					trace.getLineNumber());
 
 		} catch (Exception e) {
@@ -52,7 +59,7 @@ public class Trace {
 	private static void trace(char event, StackTraceElement trace, String text) {
 
 		if (isEnabled) {
-			Log.trace(trace, Text.printf("%s %-20s %s", event, getSource(trace), text));
+			Log.trace(trace, Text.sprintf("%s %-20s %s", event, getSource(trace), text));
 		}
 	}
 
@@ -67,14 +74,14 @@ public class Trace {
 
 		if (isEnabled) {
 			String argFormat = "(" + Text.repeat("%s", ", ", args.length) + ")";
-			trace(event, trace, Text.printf(argFormat, args));
+			trace(event, trace, Text.sprintf(argFormat, args));
 		}
 	}
 
 	private static void tracef(char event, StackTraceElement trace, String format, Object... args) {
 
 		if (isEnabled) {
-			trace(event, trace, Text.printf(format, args));
+			trace(event, trace, Text.sprintf(format, args));
 		}
 	}
 

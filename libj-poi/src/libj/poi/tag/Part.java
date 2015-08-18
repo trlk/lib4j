@@ -57,7 +57,7 @@ public class Part {
 	@Override
 	public String toString() {
 
-		return Text.printf("Part: expr=%s; isLiteral=%b, data=%s", expr, isLiteral, data);
+		return Text.sprintf("Part: expr=%s; isLiteral=%b, data=%s", expr, isLiteral, data);
 	}
 
 }

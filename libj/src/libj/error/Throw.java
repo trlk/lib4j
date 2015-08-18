@@ -24,7 +24,7 @@ public class Throw {
 
 	public static void runtimeException(String format, Object... args) throws RuntimeException {
 
-		throw new RuntimeException(Text.printf(format, args));
+		throw new RuntimeException(Text.sprintf(format, args));
 	}
 
 }

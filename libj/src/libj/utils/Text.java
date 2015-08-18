@@ -30,14 +30,26 @@ public class Text {
 		}
 	}
 
-	public static String printf(String format, Object... args) {
+	public static String format(String format, Object... args) {
 
 		return String.format(format, args);
 	}
 
+	@Deprecated
+	public static void printf(String format, Object... args) {
+
+		System.out.print(format(format, args));
+	}
+
+	@Deprecated
+	public static void printlnf(String format, Object... args) {
+
+		System.out.println(format(format, args));
+	}
+
 	public static String sprintf(String format, Object... args) {
 
-		return printf(format, args);
+		return format(format, args);
 	}
 
 	public static String toUpperCamelCase(String text) {
@@ -152,10 +164,11 @@ public class Text {
 
 		for (int i = 0; i < bytes.length; i++) {
 
-			if (i != 0 && i % 16 == 0)
-				sb.append(printf("\n"));
+			if (i != 0 && i % 16 == 0) {
+				sb.append("\n");
+			}
 
-			sb.append(printf("%2x ", bytes[i]).toUpperCase());
+			sb.append(format("%2x ", bytes[i]).toUpperCase());
 		}
 
 		return sb.toString();
@@ -201,9 +214,9 @@ public class Text {
 
 			return formatter.format(value);
 
-		} else
+		} else {
 			return value.toString();
-
+		}
 	}
 
 	public static String join(String[] strArray) {
@@ -337,7 +350,6 @@ public class Text {
 		String result = new String(str);
 
 		while (result.length() < length) {
-
 			result = result.concat(str);
 		}
 

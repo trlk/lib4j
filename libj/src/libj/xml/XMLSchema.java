@@ -4,11 +4,17 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
+import libj.debug.Log;
+import libj.error.RuntimeError;
 import libj.utils.Cal;
 import libj.utils.Xml;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import spring.util.LinkedCaseInsensitiveMap;
 
 public class XMLSchema {
 
@@ -36,7 +42,7 @@ public class XMLSchema {
 	static {
 
 		@SuppressWarnings("rawtypes")
-		Map<String, Class> map = new LinkedHashMap<String, Class>();
+		Map<String, Class> map = new LinkedCaseInsensitiveMap<Class>();
 
 		map.put(STRING, String.class);
 		map.put(BOOLEAN, Boolean.class);
@@ -106,6 +112,44 @@ public class XMLSchema {
 
 	public static Object createObject(String type, String value) throws Exception {
 		return createObject(getClass(type), value);
+	}
+
+	public static Object createObject(Node node) {
+
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+
+			String text = node.getTextContent();
+
+			// xml attributes
+			if (node.hasAttributes()) {
+
+				NamedNodeMap attrs = node.getAttributes();
+
+				for (int i = 0; i < attrs.getLength(); i++) {
+
+					Node attr = attrs.item(i);
+					String attrName = attr.getNodeName();
+					String attrValue = attr.getNodeValue();
+
+					// object with type
+					if (attrName.equalsIgnoreCase(Xml.TAG_TYPE)) {
+
+						try {
+
+							return createObject(attrValue, text);
+
+						} catch (Exception e) {
+							Log.warn(e.getMessage());
+						}
+					}
+				}
+			}
+
+			return text; // return as string
+
+		} else {
+			throw new RuntimeError("Invalid node type: %s (%s)", node.getNodeType(), node.toString());
+		}
 	}
 
 }

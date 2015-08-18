@@ -494,7 +494,7 @@ public abstract class XDataNode extends XNode {
 		Type type = bo.getType();
 		Map<String, Property> propMap = SDOUtils.getTypePropMap(type);
 
-		Log.dtrace("### %s: %s (%s) ###", this.getClass().getSimpleName(), this.getName(), type.getName());
+		Log.devel("### %s: %s (%s) ###", this.getClass().getSimpleName(), this.getName(), type.getName());
 
 		for (String propName : propMap.keySet()) {
 
@@ -503,7 +503,7 @@ public abstract class XDataNode extends XNode {
 			boolean isList = prop.isMany();
 			boolean isContainer = prop.isContainment();
 
-			Log.dtrace("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
+			Log.devel("propName=%s, isContainer=%b, isList=%b", propName, isContainer, isList);
 
 			if (this.isHas(propName)) {
 

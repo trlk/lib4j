@@ -23,7 +23,7 @@ public class Error {
 
 	public static String getTextWithTrace(Throwable e) {
 
-		return Text.printf("%s\n%s", getMessage(e), getStackTrace(e));
+		return Text.sprintf("%s\n%s", getMessage(e), getStackTrace(e));
 	}
 
 	public static void print(Throwable e, PrintStream stream) {

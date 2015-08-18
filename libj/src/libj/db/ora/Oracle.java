@@ -84,9 +84,9 @@ public class Oracle extends Database {
 	public Oracle(String host, String sid, String user, String password) {
 
 		if (host.contains(":")) {
-			setURL(Text.printf("jdbc:oracle:thin:@%s/%s", host, sid));
+			setURL(Text.sprintf("jdbc:oracle:thin:@%s/%s", host, sid));
 		} else {
-			setURL(Text.printf("jdbc:oracle:thin:@%s:%s/%s", host, 1521, sid));
+			setURL(Text.sprintf("jdbc:oracle:thin:@%s:%s/%s", host, 1521, sid));
 		}
 
 		this.user = user;
@@ -151,16 +151,16 @@ public class Oracle extends Database {
 
 			int sid = getSID(connection);
 
-			Log.debug("(%s) Connected to %s", sid, getBanner(connection));
+			Log.trace("(%s) Connected to %s", sid, getBanner(connection));
 
 			// режим автокоммита
 			if (isAutoCommit != null) {
 
 				connection.setAutoCommit(isAutoCommit);
-				Log.debug("(%s) AutoCommit: %b", sid, isAutoCommit);
+				Log.trace("(%s) AutoCommit: %b", sid, isAutoCommit);
 
 			} else {
-				Log.debug("(%s) AutoCommit: default", sid);
+				Log.trace("(%s) AutoCommit: default", sid);
 			}
 
 			// установим параметры сессии
@@ -376,7 +376,7 @@ public class Oracle extends Database {
 		Trace.point(param, value);
 
 		Statement sql = connection.createStatement();
-		sql.execute(Text.printf("alter session set %s='%s'", param, value));
+		sql.execute(Text.sprintf("alter session set %s='%s'", param, value));
 	}
 
 	// текст ошибки Oracle без стека
@@ -555,8 +555,7 @@ public class Oracle extends Database {
 		try {
 
 			if (q != null && !q.isClosed()) {
-
-				q.rollback();
+				// q.rollback();
 				q.close();
 			}
 
