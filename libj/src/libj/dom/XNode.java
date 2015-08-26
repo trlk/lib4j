@@ -1,6 +1,5 @@
 package libj.dom;
 
-
 public abstract class XNode implements Cloneable {
 
 	private XNode parent;

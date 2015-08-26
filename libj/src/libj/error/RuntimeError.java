@@ -15,9 +15,9 @@ public class RuntimeError extends RuntimeException {
 		super(message);
 	}
 
-	public RuntimeError(String format, Object... args) throws RuntimeException {
+	public RuntimeError(String format, Object... args) {
 
-		super(Text.sprintf(format, args));
+		this(Text.sprintf(format, args));
 	}
 
 }

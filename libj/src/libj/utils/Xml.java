@@ -716,7 +716,7 @@ public class Xml {
 		return null;
 	}
 
-	private static String getPrintedText(Object value) {
+	public static String getPrintedText(Object value) {
 
 		if (value instanceof Date) {
 

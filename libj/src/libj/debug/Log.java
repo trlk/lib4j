@@ -32,7 +32,7 @@ public class Log {
 	private static volatile Logger INSTANCE;
 
 	private Log() {
-		/* this is self-create singletone, creation is not allowed */
+		/* this is self-create singleton, creation is not allowed */
 	}
 
 	private static Logger instance() {
@@ -61,7 +61,7 @@ public class Log {
 			}
 		}
 
-		info("Logger instance '%s' has been initialized", getName());
+		debug("Logger instance '%s' has been initialized", getName());
 
 		return INSTANCE;
 	}
@@ -128,6 +128,7 @@ public class Log {
 	}
 
 	public static String getName() {
+
 		return instance().getName();
 	}
 
@@ -189,6 +190,11 @@ public class Log {
 	public static void setFileName(String fileName) {
 
 		instance().setFileName(fileName);
+	}
+
+	public static void setForwardJUL(boolean forwardJUL) {
+
+		instance().setForwardJUL(forwardJUL);
 	}
 
 	public static void setForwardLog4j(boolean forwardLog4j) {

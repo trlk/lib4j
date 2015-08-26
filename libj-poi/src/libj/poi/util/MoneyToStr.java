@@ -118,13 +118,13 @@ public class MoneyToStr {
 
 		Currency currency;
 
-		if (Text.equals(currencyId, "UAH", "980")) {
+		if (Text.isEqual(currencyId, "UAH", "980")) {
 			currency = Currency.UAH;
-		} else if (Text.equals(currencyId, "USD", "840")) {
+		} else if (Text.isEqual(currencyId, "USD", "840")) {
 			currency = Currency.USD;
-		} else if (Text.equals(currencyId, "EUR", "978")) {
+		} else if (Text.isEqual(currencyId, "EUR", "978")) {
 			currency = Currency.EUR;
-		} else if (Text.equals(currencyId, "RUB", "643")) {
+		} else if (Text.isEqual(currencyId, "RUB", "643")) {
 			currency = Currency.RUB;
 		} else {
 			throw new IllegalArgumentException("Unsupported currency");

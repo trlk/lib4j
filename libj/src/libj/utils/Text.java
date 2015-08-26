@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import libj.error.Throw;
 
@@ -54,14 +55,18 @@ public class Text {
 
 	public static String toUpperCamelCase(String text) {
 
-		if (text == null || text.length() == 0)
+		if (text == null || text.length() == 0) {
 			return text;
+		}
 
 		char[] chars = text.toCharArray();
 
-		for (int i = 0; i < chars.length; i++)
-			if (!Character.isLetterOrDigit(chars[i]))
+		for (int i = 0; i < chars.length; i++) {
+
+			if (!Character.isLetterOrDigit(chars[i])) {
 				chars[i] = '-';
+			}
+		}
 
 		text = new String(chars);
 
@@ -70,17 +75,22 @@ public class Text {
 		ArrayList<String> words = new ArrayList<String>();
 
 		for (int i = 0; i < w.length; i++) {
-			if (w[i].length() != 0)
+
+			if (w[i].length() != 0) {
 				words.add(w[i]);
+			}
 		}
 
 		StringBuilder sb = new StringBuilder(words.size());
 
 		for (int i = 0; i < words.size(); i++) // skip first
 		{
+
 			sb.append(words.get(i).substring(0, 1).toUpperCase());
-			if (words.get(0).length() > 1)
+
+			if (words.get(0).length() > 1) {
 				sb.append(words.get(i).substring(1));
+			}
 		}
 
 		return sb.toString(); // join
@@ -88,8 +98,9 @@ public class Text {
 
 	public static String toLowerCamelCase(String text) {
 
-		if (text == null || text.length() == 0)
+		if (text == null || text.length() == 0) {
 			return text;
+		}
 
 		char[] result = toUpperCamelCase(text).toCharArray();
 		result[0] = Character.toLowerCase(result[0]);
@@ -325,6 +336,7 @@ public class Text {
 	 * @return true if the String is empty or null
 	 */
 	public static boolean isEmpty(String str) {
+
 		return str == null || str.length() == 0;
 	}
 
@@ -342,7 +354,35 @@ public class Text {
 	 * @return true if the String is not empty and not null
 	 */
 	public static boolean isNotEmpty(String str) {
+
 		return str != null && str.length() > 0;
+	}
+
+	public static boolean isEqual(char what, char... args) {
+
+		for (char arg : args) {
+
+			if (what == arg) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqual(String what, String... args) {
+
+		if (what != null) {
+
+			for (String arg : args) {
+
+				if (what.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public static String fill(String str, int length) {
@@ -383,33 +423,6 @@ public class Text {
 		return result;
 	}
 
-	public static boolean equals(char what, char... args) {
-
-		for (char arg : args) {
-
-			if (what == arg) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static boolean equals(String what, String... args) {
-
-		if (what != null) {
-
-			for (String arg : args) {
-
-				if (what.equals(arg)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
 	public static String onlyNumbers(String text) {
 
 		String result = new String();
@@ -429,6 +442,42 @@ public class Text {
 		}
 
 		return result;
+	}
+
+	public static String concat(Object... args) {
+
+		String format = repeat("%s", args.length);
+
+		return format(format, args);
+	}
+
+	public static String concat(char delim, Object... args) {
+
+		String format = repeat("%s", String.valueOf(delim), args.length);
+
+		return format(format, args);
+	}
+
+	public static List<String> createList(String... args) {
+
+		List<String> list = new ArrayList<String>();
+
+		for (int i = 0; i < args.length; i++) {
+			list.add(args[i]);
+		}
+
+		return list;
+	}
+
+	public static String[] createArray(List<String> list) {
+
+		String[] arr = new String[list.size()];
+
+		for (int i = 0; i < list.size(); i++) {
+			arr[i] = list.get(i);
+		}
+
+		return arr;
 	}
 
 }

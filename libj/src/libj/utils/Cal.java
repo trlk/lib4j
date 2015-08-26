@@ -62,10 +62,11 @@ public class Cal {
 
 	public static Date max(Date d0, Date d1) {
 
-		if (d0.getTime() > d1.getTime())
+		if (d0.getTime() > d1.getTime()) {
 			return d0;
-		else
+		} else {
 			return d1;
+		}
 	}
 
 	public static Date nvl(Date d0, Date d1) {
@@ -86,16 +87,11 @@ public class Cal {
 		return d0.getTime() - d1.getTime();
 	}
 
-	public static boolean equals(Date d0, Date d1) {
-
-		if (d0 == null || d1 == null) {
-			return false;
-		}
-
-		return diff(d0, d1) == 0;
-	}
-
 	public static Date trunc(Date d) {
+
+		if (d == null) {
+			return null;
+		}
 
 		Calendar cal = Calendar.getInstance();
 
@@ -106,6 +102,37 @@ public class Cal {
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 
 		return cal.getTime();
+	}
+
+	public static Date round(Date d) {
+
+		if (d == null) {
+			return null;
+		}
+
+		Date truncDate = trunc(d);
+
+		long millis = millisBetween(d, truncDate);
+
+		if (millis >= MILLIS_PER_DAY / 2) {
+			return addDays(truncDate, 1);
+		} else {
+			return truncDate;
+		}
+	}
+
+	public static boolean isEqual(Date d0, Date d1) {
+
+		if (d0 == null || d1 == null) {
+			return false;
+		}
+
+		return diff(d0, d1) == 0;
+	}
+
+	public static boolean isTruncated(Date d) {
+
+		return isEqual(d, trunc(d));
 	}
 
 	// дата JAVA->GC
@@ -357,7 +384,7 @@ public class Cal {
 
 	public static long millisBetween(Date d0, Date d1) {
 
-		return d0.getTime() - d1.getTime();
+		return d0.getTime() - d1.getTime() + getTimeZoneDiff(d0, d1);
 	}
 
 	public static long secondsBetween(Date d0, Date d1) {
@@ -380,6 +407,11 @@ public class Cal {
 		return secondsBetween(d0, d1) / SECONDS_PER_DAY;
 	}
 
+	public static Float secondsDiff(Date d0, Date d1) {
+
+		return new Float(millisBetween(d0, d1)) / MILLIS_PER_SECOND;
+	}
+
 	public static Float minutesDiff(Date d0, Date d1) {
 
 		return new Float(millisBetween(d0, d1)) / MILLIS_PER_MINUTE;
@@ -400,6 +432,12 @@ public class Cal {
 		Date result = new Date();
 
 		result.setTime(d.getTime() + millis);
+
+		long tzDelta = getTimeZoneDiff(d, result);
+
+		if (tzDelta != 0) {
+			result = addMillis(result, tzDelta);
+		}
 
 		return result;
 	}
@@ -439,14 +477,22 @@ public class Cal {
 		return TimeZone.getTimeZone(tzID);
 	}
 
-	public static int getTimeZoneOffset(Date d) {
+	public static long getTimeZoneOffset(Date d) {
 
 		return getTimeZone().getOffset(d.getTime());
 	}
 
-	public static int getTimeZoneOffset() {
+	public static long getTimeZoneOffset() {
 
 		return getTimeZoneOffset(now());
+	}
+
+	public static long getTimeZoneDiff(Date d0, Date d1) {
+
+		long offset0 = getTimeZoneOffset(d0);
+		long offset1 = getTimeZoneOffset(d1);
+
+		return offset0 - offset1;
 	}
 
 	public static Date utcToLocal(Date d) {

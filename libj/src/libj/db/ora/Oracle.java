@@ -149,19 +149,14 @@ public class Oracle extends Database {
 				throw new RuntimeError("Invalid connection mode: %s", mode.toString());
 			}
 
-			int sid = getSID(connection);
-
-			Log.trace("(%s) Connected to %s", sid, getBanner(connection));
-
 			// режим автокоммита
 			if (isAutoCommit != null) {
-
 				connection.setAutoCommit(isAutoCommit);
-				Log.trace("(%s) AutoCommit: %b", sid, isAutoCommit);
-
-			} else {
-				Log.trace("(%s) AutoCommit: default", sid);
 			}
+
+			// hello
+			Log.trace("(%s) Connected to %s (AutoCommit: %s)", getSID(connection), getBanner(connection),
+					isAutoCommit != null ? isAutoCommit.toString() : "default");
 
 			// установим параметры сессии
 			alterSession(connection, "NLS_DATE_FORMAT", dateFormat);
