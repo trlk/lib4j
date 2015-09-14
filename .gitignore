@@ -90,6 +90,7 @@ RemoteSystemsTempFiles/
 hs_err_pid*
 
 #libj ignores
+lib/
 test/
 target/
 *.jar
