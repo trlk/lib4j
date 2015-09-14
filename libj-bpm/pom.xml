@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.libj</groupId>
+		<artifactId>libj</artifactId>
+		<version>1.19</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<groupId>org.libj</groupId>
+	<artifactId>libj-bpm</artifactId>
+	<version>${project.parent.version}</version>
+	<packaging>jar</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>org.libj</groupId>
+			<artifactId>libj-core</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.bpm</groupId>
+			<artifactId>psclnt</artifactId>
+			<version>8.5.0.1</version>
+			<scope>system</scope>
+			<systemPath>${libdir}/psclnt-8.5.0.1.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.bpm</groupId>
+			<artifactId>svrcoreclnt</artifactId>
+			<version>8.5.0.1</version>
+			<scope>system</scope>
+			<systemPath>${libdir}/svrcoreclnt-8.5.0.1.jar</systemPath>
+		</dependency>
+	</dependencies>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>${basedir}</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+</project>

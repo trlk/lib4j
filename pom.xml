@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<name>libj</name>	
+	<groupId>org.libj</groupId>
+	<artifactId>libj</artifactId>
+	<version>1.19</version>
+	<packaging>pom</packaging>
+	<description>LibJ General Use Java Library</description>
+	<url>https://bitbucket.org/rtfm/libj</url>
+	<developers>
+		<developer>
+			<id>taras</id>
+			<name>Taras Lyuklyanchuk</name>
+			<url>https://bitbucket.org/rtfm</url>
+		</developer>
+	</developers>
+	<modules>
+		<module>libj-core</module>
+		<module>libj-bpm</module>
+		<module>libj-poi</module>
+	</modules>
+	<properties>
+		<parent.basedir>${project.parent.relativePath}</parent.basedir>
+		<libdir>${project.basedir}/../lib</libdir>
+		<build.by>${project.developers[0].name}</build.by>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<outputDirectory>${parent.basedir}</outputDirectory>
+					<archive>
+						<manifestEntries>
+							<Built-By>${build.by}</Built-By>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
