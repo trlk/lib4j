@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre7"/>
 	<classpathentry kind="lib" path="/lib/psclnt-8.5.0.1.jar"/>
 	<classpathentry kind="lib" path="/lib/svrcoreclnt-8.5.0.1.jar"/>
-	<classpathentry kind="lib" path="/libj/bin" sourcepath="/libj/src"/>
 	<classpathentry kind="lib" path="/libj-poi/bin"/>
+	<classpathentry kind="lib" path="/libj-core/bin"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

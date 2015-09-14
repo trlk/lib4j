@@ -155,8 +155,10 @@ public class Oracle extends Database {
 			}
 
 			// hello
-			Log.trace("(%s) Connected to %s (AutoCommit: %s)", getSID(connection), getBanner(connection),
-					isAutoCommit != null ? isAutoCommit.toString() : "default");
+			if (Log.isLoggable(Log.DEVEL)) {
+				Log.trace("(%s) Connected to %s (AutoCommit: %s)", getSID(connection), getBanner(connection),
+						isAutoCommit != null ? isAutoCommit.toString() : "default");
+			}
 
 			// установим параметры сессии
 			alterSession(connection, "NLS_DATE_FORMAT", dateFormat);

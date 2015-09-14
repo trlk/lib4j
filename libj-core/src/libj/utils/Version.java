@@ -12,7 +12,6 @@ public class Version {
 	 * @param version2
 	 * @return result 0/1/-1
 	 */
-
 	public static int compare(String version1, String version2) {
 
 		String[] levels1 = version1.split("\\.");

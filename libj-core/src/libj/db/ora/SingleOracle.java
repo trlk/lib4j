@@ -1,5 +1,11 @@
 package libj.db.ora;
 
+/**
+ * @author Taras Lyuklyanchuk
+ * 
+ * Oracle DB Library
+ */
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

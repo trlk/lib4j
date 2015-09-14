@@ -15,8 +15,8 @@ public class Bool {
 	public static final Boolean FALSE = new Boolean(false);
 	public static final Integer INT_TRUE = 1;
 	public static final Integer INT_FALSE = 0;
-	public static final String TXT_TRUE = TRUE.toString();
-	public static final String TXT_FALSE = FALSE.toString();
+	public static final String TXT_TRUE = TRUE.toString().intern();
+	public static final String TXT_FALSE = FALSE.toString().intern();
 
 	public static Boolean toBoolean(boolean value) {
 

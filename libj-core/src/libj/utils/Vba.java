@@ -6,22 +6,27 @@ import java.text.NumberFormat;
 public class Vba {
 
 	public static String ChrW(int code) {
+
 		return Character.toString((char) code);
 	}
 
 	public static String Left(String text, Integer numberOfChars) {
+
 		return Text.substr(text, 1, numberOfChars);
 	}
 
 	public static String Left(String text) {
+
 		return Left(text, 1);
 	}
 
 	public static String Right(String text, Integer numberOfChars) {
+
 		return Text.substr(text, -numberOfChars);
 	}
 
 	public static String Right(String text) {
+
 		return Left(text, 1);
 	}
 
@@ -42,8 +47,7 @@ public class Vba {
 		return Integer.valueOf(text);
 	}
 
-	public static String Mid(String text, Integer startPosition,
-			Integer numberOfChars) {
+	public static String Mid(String text, Integer startPosition, Integer numberOfChars) {
 
 		return Text.substr(text, startPosition, numberOfChars);
 	}
@@ -55,10 +59,11 @@ public class Vba {
 
 	public static String IIf(Boolean expr, String truePart, String falsePart) {
 
-		if (expr)
+		if (expr) {
 			return truePart;
-		else
+		} else {
 			return falsePart;
+		}
 
 	}
 

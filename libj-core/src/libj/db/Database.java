@@ -1,6 +1,5 @@
 package libj.db;
 
-
 public abstract class Database {
 
 	// SQL states

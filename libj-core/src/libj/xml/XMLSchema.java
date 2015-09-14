@@ -19,22 +19,22 @@ import spring.util.LinkedCaseInsensitiveMap;
 public class XMLSchema {
 
 	// namespace
-	public static final String NS = "http://www.w3.org/2001/XMLSchema";
+	public static final String NS = "http://www.w3.org/2001/XMLSchema".intern();
 
 	// xml types 
-	public static final String STRING = "string";
-	public static final String BOOLEAN = "boolean";
-	public static final String BYTE = "byte";
-	public static final String INT = "int";
-	public static final String INTEGER = "integer";
-	public static final String LONG = "long";
-	public static final String SHORT = "short";
-	public static final String FLOAT = "float";
-	public static final String DOUBLE = "double";
-	public static final String DECIMAL = "decimal";
-	public static final String DATE = "date";
-	public static final String TIME = "time";
-	public static final String DATETIME = "dateTime";
+	public static final String STRING = "string".intern();
+	public static final String BOOLEAN = "boolean".intern();
+	public static final String BYTE = "byte".intern();
+	public static final String INT = "int".intern();
+	public static final String INTEGER = "integer".intern();
+	public static final String LONG = "long".intern();
+	public static final String SHORT = "short".intern();
+	public static final String FLOAT = "float".intern();
+	public static final String DOUBLE = "double".intern();
+	public static final String DECIMAL = "decimal".intern();
+	public static final String DATE = "date".intern();
+	public static final String TIME = "time".intern();
+	public static final String DATETIME = "dateTime".intern();
 
 	@SuppressWarnings("rawtypes")
 	private static final Map<String, Class> types;

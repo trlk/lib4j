@@ -32,7 +32,7 @@ public class Log {
 	private static volatile Logger INSTANCE;
 
 	private Log() {
-		/* this is self-create singleton, creation is not allowed */
+		/* this is self-create singleton, instantiation is not allowed */
 	}
 
 	private static Logger instance() {

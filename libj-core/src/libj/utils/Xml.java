@@ -55,24 +55,24 @@ public class Xml {
 	public static boolean PUT_EMPTY_NODES = Debug.isEnabled();
 
 	// constants
-	public static final String TAG_TYPE = "type";
-	public static final String TAG_TEXT = "text";
-	public static final String TAG_NAME_ITEM = "item";
-	public static final String TAG_NAME_ITEMS = "items";
-	public static final String ATTR_NAME_TYPE = "type";
-	public static final String ATTR_NAME_INDEX = "index";
+	public static final String TAG_TYPE = "type".intern();
+	public static final String TAG_TEXT = "text".intern();
+	public static final String TAG_NAME_ITEM = "item".intern();
+	public static final String TAG_NAME_ITEMS = "items".intern();
+	public static final String ATTR_NAME_TYPE = "type".intern();
+	public static final String ATTR_NAME_INDEX = "index".intern();
 	public static final int INDENT_LENGTH = 2;
 	public static final char COMMA_DELIMITER = '.';
 	public static final char XPATH_DELIMITER = '/';
 
 	// xml date/time format
-	public static final String DATE_FORMAT = "yyyy-MM-dd";
-	public static final String TIME_FORMAT = "HH:mm:ss";
-	public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+	public static final String DATE_FORMAT = "yyyy-MM-dd".intern();
+	public static final String TIME_FORMAT = "HH:mm:ss".intern();
+	public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss".intern();
 
 	// boolean
-	public static final String XML_TRUE = Bool.TRUE.toString();
-	public static final String XML_FALSE = Bool.FALSE.toString();
+	public static final String XML_TRUE = Bool.TRUE.toString().intern();
+	public static final String XML_FALSE = Bool.FALSE.toString().intern();
 
 	public static Document parse(InputStream inputStream) {
 
@@ -323,7 +323,7 @@ public class Xml {
 							Object object = XMLSchema.createObject(node);
 							map.put(path, object);
 
-							// printed (human) text
+							// printed (human readable) text
 							String printedText = getPrintedText(object);
 
 							if (Text.isNotEmpty(printedText)) {
@@ -337,6 +337,7 @@ public class Xml {
 				}
 			}
 		}
+
 
 		// recursive parse child
 		for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
