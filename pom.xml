@@ -4,7 +4,7 @@
 	<name>libj</name>	
 	<groupId>org.libj</groupId>
 	<artifactId>libj</artifactId>
-	<version>1.19</version>
+	<version>1.20</version>
 	<packaging>pom</packaging>
 	<description>LibJ General Use Java Library</description>
 	<url>https://bitbucket.org/rtfm/libj</url>
@@ -21,8 +21,9 @@
 		<module>libj-poi</module>
 	</modules>
 	<properties>
-		<parent.basedir>${project.parent.relativePath}</parent.basedir>
-		<libdir>${project.basedir}/../lib</libdir>
+		<main.basedir>${user.dir}</main.basedir>
+		<main.target>${main.basedir}/target</main.target>
+		<main.libdir>${main.basedir}/lib</main.libdir>
 		<build.by>${project.developers[0].name}</build.by>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -41,4 +42,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<distributionManagement>
+		<repository>
+			<id>internal.repo</id>
+			<name>Temporary Staging Repository</name>
+			<url>file://${main.basedir}/mvn-repo</url>
+		</repository>
+	</distributionManagement>
 </project>

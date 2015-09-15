@@ -94,3 +94,4 @@ lib/
 test/
 target/
 *.jar
+mvn-repo/
