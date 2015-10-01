@@ -46,7 +46,7 @@ public class Cal {
 		return new Date(0);
 	}
 
-	public static Date copy(Date d) {
+	public static Date clone(Date d) {
 
 		return new Date(d.getTime());
 	}

@@ -16,7 +16,8 @@ public class Formatter implements Plugin {
 	private static String formatDouble = "formatDouble";
 
 	public boolean hasFunc(String funcName) {
-		return Text.isEqual(funcName, formatDate, formatDouble);
+
+		return Text.isEqualsAny(funcName, formatDate, formatDouble);
 	}
 
 	public String call(String funcName, Object[] args) throws Exception {

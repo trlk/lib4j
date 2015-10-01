@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -28,16 +29,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import libj.debug.Debug;
-import libj.debug.Stack;
-import libj.error.Throw;
-import libj.xml.XMLSchema;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import libj.debug.Debug;
+import libj.debug.Stack;
+import libj.error.RuntimeError;
+import libj.error.Throw;
+import libj.xml.XMLSchema;
 
 public class Xml {
 
@@ -47,9 +49,6 @@ public class Xml {
 
 	@Deprecated
 	public static char ELEMENT_DELIMITER = '.';
-
-	@Deprecated
-	public static boolean THROW_NOT_FOUND = false;
 
 	@Deprecated
 	public static boolean PUT_EMPTY_NODES = Debug.isEnabled();
@@ -182,7 +181,7 @@ public class Xml {
 
 			/*
 			Node fromNode;
-
+			
 			if (offset == 0) {
 				fromNode = null; // до упора
 			} else if (offset == 1) {
@@ -338,7 +337,6 @@ public class Xml {
 			}
 		}
 
-
 		// recursive parse child
 		for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
 			map.putAll(createMap(child, putEmptyNodes, elementDelimiter, attrDelimiter));
@@ -464,10 +462,9 @@ public class Xml {
 			return b.newDocument();
 
 		} catch (ParserConfigurationException e) {
-			Throw.runtimeException(e);
+			throw new RuntimeError(e);
 		}
 
-		return null;
 	}
 
 	public static Node createDocument(String rootName) {
@@ -506,8 +503,9 @@ public class Xml {
 
 				Node attr = attrs.item(i);
 
-				if (attr.getNodeName() == attrName)
+				if (attr.getNodeName() == attrName) {
 					return attr;
+				}
 			}
 		}
 
@@ -518,10 +516,11 @@ public class Xml {
 
 		Node attr = getAttribute(node, attrName);
 
-		if (attr != null)
+		if (attr != null) {
 			return attr.getNodeValue();
-		else
+		} else {
 			return Text.EMPTY_STRING;
+		}
 	}
 
 	public static void setAttrValue(Node node, String attrName, String value) {
@@ -529,8 +528,11 @@ public class Xml {
 		Node attr = getAttribute(node, attrName);
 
 		if (attr != null) {
+
 			setNodeValue(attr, value);
+
 		} else if (value != null) {
+
 			NamedNodeMap attributes = node.getAttributes();
 			attr = node.getOwnerDocument().createAttribute(attrName);
 			attr.setNodeValue(value);
@@ -541,26 +543,25 @@ public class Xml {
 	public static void setAttrValue(Node node, String attrName, Object value) {
 
 		if (value instanceof Date) {
-
 			setAttrValue(node, attrName, Cal.formatDate((Date) value, DATETIME_FORMAT));
-
 		} else {
-
 			setAttrValue(node, attrName, value.toString());
 		}
 	}
 
-	public static NodeList extractList(Node node, String xpath) {
+	public static NodeList extractList(Node parent, String xpath) {
 
 		NodeList result = null;
 
 		try {
+
 			XPath xPath = XPathFactory.newInstance().newXPath();
 
-			result = (NodeList) xPath.evaluate(xpath, node, XPathConstants.NODESET);
+			result = (NodeList) xPath.evaluate(xpath, parent, XPathConstants.NODESET);
 
 		} catch (XPathExpressionException e) {
-			Throw.runtimeException(e);
+
+			throw new RuntimeError(e);
 		}
 
 		return result;
@@ -571,24 +572,18 @@ public class Xml {
 		return extractList(doc.getDocumentElement(), xpath);
 	}
 
-	public static Node extractNode(Node node, String xpath) {
+	public static Node extractNode(Node parent, String xpath) {
 
-		NodeList nodes = extractList(node, xpath);
+		NodeList nodes = extractList(parent, xpath);
+		int size = nodes.getLength();
 
-		if (nodes.getLength() == 0) {
-
-			if (THROW_NOT_FOUND) {
-				Throw.runtimeException("Node not found");
-			} else {
-				return null;
-			}
-
-		} else if (nodes.getLength() > 1) {
-
-			Throw.runtimeException("More then one node found");
+		if (size == 0) {
+			return null;
+		} else if (size == 1) {
+			return nodes.item(0);
+		} else {
+			throw new RuntimeException("More than one node found");
 		}
-
-		return nodes.item(0);
 	}
 
 	public static Node extractNode(Document doc, String xpath) {
@@ -596,53 +591,111 @@ public class Xml {
 		return extractNode(doc.getDocumentElement(), xpath);
 	}
 
-	public static String getText(Node node, String xpath, String defaultText) {
+	public static int getSize(Node parent, String xpath) {
 
-		Node textNode = extractNode(node, xpath);
+		NodeList nodeList = extractList(parent, xpath);
+
+		return nodeList.getLength();
+	}
+
+	public static boolean isHas(Node parent, String xpath) {
+
+		return getSize(parent, xpath) != 0;
+	}
+
+	public static boolean isSet(Node parent, String xpath) {
+
+		Node textNode = extractNode(parent, xpath);
+
+		if (textNode != null) {
+			return Text.isNotEmpty(textNode.getTextContent());
+		} else {
+			return false;
+		}
+	}
+
+	@Deprecated
+	public static String getText(Node parent, String xpath) {
+
+		return getText(parent, xpath, Text.EMPTY_STRING);
+	}
+
+	@Deprecated
+	public static String getText(Node parent, String xpath, String defaultValue) {
+
+		Node textNode = extractNode(parent, xpath);
 
 		if (textNode != null) {
 			return textNode.getTextContent();
 		} else {
-			return defaultText;
+			return defaultValue;
 		}
 	}
 
-	public static String getText(Node node, String xpath) {
+	public static String getString(Node parent, String xpath) {
 
-		return getText(node, xpath, Text.EMPTY_STRING);
+		return getString(parent, xpath, Text.EMPTY_STRING);
 	}
 
-	public static String getString(Node node, String xpath) {
+	public static String getString(Node parent, String xpath, String defaultValue) {
 
-		return getText(node, xpath);
+		Node node = extractNode(parent, xpath);
+
+		if (node != null) {
+			return node.getTextContent();
+		} else {
+			return defaultValue;
+		}
 	}
 
-	public static Date getDate(Node node, String xpath, String format) {
+	public static Date getDate(Node parent, String xpath, String format) {
 
-		return Cal.toDate(getString(node, xpath), format);
+		return Cal.toDate(getString(parent, xpath), format);
 	}
 
-	public static Date getDate(Node node, String xpath) {
+	public static Date getDate(Node parent, String xpath) {
 
-		return getDate(node, xpath, DATE_FORMAT);
+		return getDate(parent, xpath, DATE_FORMAT);
 	}
 
-	public static Date getDateTime(Node node, String xpath) {
+	public static Date getDate(Node parent, String xpath, Date defaultValue) {
 
-		return getDate(node, xpath, DATETIME_FORMAT);
+		Date result = getDate(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
 	}
 
-	public static Boolean getBoolean(Node node, String xpath) {
+	public static Date getDateTime(Node parent, String xpath) {
 
-		String value = getString(node, xpath);
+		return getDate(parent, xpath, DATETIME_FORMAT);
+	}
+
+	public static Date getDateTime(Node parent, String xpath, Date defaultValue) {
+
+		Date result = getDateTime(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static Boolean getBoolean(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
 
 		try {
 
-			if (value.equalsIgnoreCase(XML_TRUE)) {
+			if (Text.isEmpty(value)) {
+				return null;
+			} else if (value.equalsIgnoreCase(XML_TRUE)) {
 				return true;
-			}
-
-			if (value.equalsIgnoreCase(XML_FALSE)) {
+			} else if (value.equalsIgnoreCase(XML_FALSE)) {
 				return false;
 			}
 
@@ -650,71 +703,187 @@ public class Xml {
 			return new Integer(value) != 0;
 
 		} catch (Exception e) {
-
-			Throw.runtimeException("Unparseable boolean: %s", value);
+			throw new RuntimeError("Unparseable boolean: %s", value);
 		}
-
-		return null;
 	}
 
-	public static Integer getInteger(Node node, String xpath) {
+	public static boolean getBoolean(Node parent, String xpath, boolean defaultValue) {
 
-		String value = getString(node, xpath);
+		Boolean result = getBoolean(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static Integer getInteger(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
 
 			return new Integer(value);
 
 		} catch (Exception e) {
-
-			Throw.runtimeException("Unparseable integer: %s", value);
+			throw new RuntimeError("Unparseable integer: %s", value);
 		}
-
-		return null;
 	}
 
-	public static Float getFloat(Node node, String xpath) {
+	public static int getInteger(Node parent, String xpath, int defaultValue) {
 
-		String value = getString(node, xpath);
+		Integer result = getInteger(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static Long getLong(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
+
+		try {
+
+			return new Long(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable long: %s", value);
+		}
+	}
+
+	public static long getLong(Node parent, String xpath, long defaultValue) {
+
+		Long result = getLong(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static Float getFloat(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
 
 			return new Float(value);
 
 		} catch (Exception e) {
-
-			Throw.runtimeException("Unparseable float: %s", value);
+			throw new RuntimeError("Unparseable float: %s", value);
 		}
-
-		return null;
 	}
 
-	public static Double getDouble(Node node, String xpath) {
+	public static float getFloat(Node parent, String xpath, float defaultValue) {
 
-		String value = getString(node, xpath);
+		Float result = getFloat(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static Double getDouble(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
+
 			return new Double(value);
 
 		} catch (Exception e) {
-			Throw.runtimeException("Unparseable double: %s", value);
+			throw new RuntimeError("Unparseable double: %s", value);
 		}
-
-		return null;
 	}
 
-	public static BigDecimal getBigDecimal(Node node, String xpath) {
+	public static double getDouble(Node parent, String xpath, double defaultValue) {
 
-		String value = getString(node, xpath);
+		Double result = getDouble(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static BigInteger getBigInteger(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
 
 		try {
+
+			return new BigInteger(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable BigInteger: %s", value);
+		}
+	}
+
+	public static BigInteger getBigInteger(Node parent, String xpath, BigInteger defaultValue) {
+
+		BigInteger result = getBigInteger(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public static BigDecimal getBigDecimal(Node parent, String xpath) {
+
+		String value = getString(parent, xpath);
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
+
+		try {
+
 			return new BigDecimal(value);
 
 		} catch (Exception e) {
-			Throw.runtimeException("Unparseable bigDecimal: %s", value);
+			throw new RuntimeError("Unparseable BigDecimal: %s", value);
 		}
+	}
 
-		return null;
+	public static BigDecimal getBigDecimal(Node parent, String xpath, BigDecimal defaultValue) {
+
+		BigDecimal result = getBigDecimal(parent, xpath);
+
+		if (result != null) {
+			return result;
+		} else {
+			return defaultValue;
+		}
 	}
 
 	public static String getPrintedText(Object value) {

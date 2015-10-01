@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.w3c.dom.Document;
+
 import libj.debug.Debug;
 import libj.debug.Log;
 import libj.error.RuntimeError;
@@ -21,9 +24,6 @@ import libj.poi.tag.Tag;
 import libj.utils.Stream;
 import libj.utils.Text;
 import libj.utils.Xml;
-
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.w3c.dom.Document;
 
 public class WordEngine extends Engine {
 
@@ -217,7 +217,7 @@ public class WordEngine extends Engine {
 						try {
 
 							if (!data.containsKey(expr)) {
-								data.put(expr, Xml.getText(this.data, expr));
+								data.put(expr, Xml.getString(this.data, expr));
 							}
 
 						} catch (Exception e) {

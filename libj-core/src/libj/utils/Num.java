@@ -134,6 +134,11 @@ public class Num {
 		return Integer.parseInt(value);
 	}
 
+	public static long toLong(String value) {
+
+		return Long.parseLong(value);
+	}
+
 	public static Integer toInteger(String value) {
 
 		if (Text.isEmpty(value)) {

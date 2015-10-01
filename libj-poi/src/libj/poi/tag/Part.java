@@ -38,7 +38,7 @@ public class Part {
 			char firstChar = expr.charAt(0);
 			char lastChar = expr.charAt(expr.length() - 1);
 
-			isLiteral = Text.isEqual(firstChar, quotes) && Text.isEqual(lastChar, quotes);
+			isLiteral = Text.isEqualsAny(firstChar, quotes) && Text.isEqualsAny(lastChar, quotes);
 
 			if (isLiteral) {
 				setData(expr.substring(1, expr.length() - 1));

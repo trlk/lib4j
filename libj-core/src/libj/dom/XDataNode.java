@@ -1,12 +1,19 @@
 package libj.dom;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import commonj.sdo.DataObject;
+import commonj.sdo.Property;
+import commonj.sdo.Type;
 import libj.debug.Log;
 import libj.debug.Stack;
 import libj.error.RuntimeError;
@@ -16,13 +23,6 @@ import libj.utils.Cal;
 import libj.utils.Num;
 import libj.utils.Xml;
 import libj.xml.XMLSchema;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
-import commonj.sdo.DataObject;
-import commonj.sdo.Property;
-import commonj.sdo.Type;
 
 public abstract class XDataNode extends XNode {
 
@@ -143,6 +143,25 @@ public abstract class XDataNode extends XNode {
 		}
 	}
 
+	public boolean toBoolean() {
+
+		if (object instanceof Boolean) {
+			return (Boolean) object;
+		} else {
+			return Bool.toBoolean(this.toString());
+		}
+	}
+
+	public int toInt() {
+
+		return Num.toInt(this.toString());
+	}
+
+	public long toLong() {
+
+		return Num.toLong(this.toString());
+	}
+
 	public Date toDate(String format) {
 
 		if (object instanceof Date) {
@@ -162,11 +181,6 @@ public abstract class XDataNode extends XNode {
 		return toDate(Xml.DATETIME_FORMAT);
 	}
 
-	public int toInteger() {
-
-		return Num.toInteger(this.toString());
-	}
-
 	public float toFloat() {
 
 		return Num.toFloat(this.toString());
@@ -177,18 +191,14 @@ public abstract class XDataNode extends XNode {
 		return Num.toDouble(this.toString());
 	}
 
+	public BigInteger toBigInteger() {
+
+		return Num.toBigInteger(this.toString());
+	}
+
 	public BigDecimal toBigDecimal() {
 
 		return Num.toBigDecimal(this.toString());
-	}
-
-	public boolean toBoolean() {
-
-		if (object instanceof Boolean) {
-			return (Boolean) object;
-		} else {
-			return Bool.toBoolean(this.toString());
-		}
 	}
 
 	public String getName() {
@@ -286,9 +296,37 @@ public abstract class XDataNode extends XNode {
 		return get(index).toString();
 	}
 
+	public boolean getBoolean(String name) {
+
+		return get(name).toBoolean();
+	}
+
+	public boolean getBoolean(String name, boolean defaultValue) {
+
+		if (isSet(name)) {
+			return getBoolean(name);
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public boolean getBoolean(int index) {
+
+		return get(index).toBoolean();
+	}
+
 	public Date getDate(String name) {
 
 		return get(name).toDate();
+	}
+
+	public Date getDate(String name, Date defaultValue) {
+
+		if (isSet(name)) {
+			return getDate(name);
+		} else {
+			return defaultValue;
+		}
 	}
 
 	public Date getDate(int index) {
@@ -311,6 +349,15 @@ public abstract class XDataNode extends XNode {
 		return get(name).toDateTime();
 	}
 
+	public Date getDateTime(String name, Date defaultValue) {
+
+		if (isSet(name)) {
+			return getDateTime(name);
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public Date getDateTime(int index) {
 
 		return get(index).toDateTime();
@@ -318,7 +365,7 @@ public abstract class XDataNode extends XNode {
 
 	public int getInt(String name) {
 
-		return get(name).toInteger();
+		return get(name).toInt();
 	}
 
 	public int getInt(String name, int defaultValue) {
@@ -332,7 +379,26 @@ public abstract class XDataNode extends XNode {
 
 	public int getInt(int index) {
 
-		return get(index).toInteger();
+		return get(index).toInt();
+	}
+
+	public long getLong(String name) {
+
+		return get(name).toInt();
+	}
+
+	public long getLong(String name, long defaultValue) {
+
+		if (isSet(name)) {
+			return getLong(name);
+		} else {
+			return defaultValue;
+		}
+	}
+
+	public long getLong(int index) {
+
+		return get(index).toLong();
 	}
 
 	public float getFloat(String name) {
@@ -340,7 +406,7 @@ public abstract class XDataNode extends XNode {
 		return get(name).toFloat();
 	}
 
-	public float getFloat(String name, int defaultValue) {
+	public float getFloat(String name, float defaultValue) {
 
 		if (isSet(name)) {
 			return getFloat(name);
@@ -373,6 +439,25 @@ public abstract class XDataNode extends XNode {
 		return get(index).toDouble();
 	}
 
+	public BigInteger getBigInteger(String name) {
+
+		return get(name).toBigInteger();
+	}
+
+	public BigInteger getBigInteger(int index) {
+
+		return get(index).toBigInteger();
+	}
+
+	public BigInteger getBigInteger(String name, BigInteger defaultValue) {
+
+		if (isSet(name)) {
+			return getBigInteger(name);
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public BigDecimal getBigDecimal(String name) {
 
 		return get(name).toBigDecimal();
@@ -392,31 +477,14 @@ public abstract class XDataNode extends XNode {
 		}
 	}
 
-	public boolean getBoolean(String name) {
-
-		return get(name).toBoolean();
-	}
-
-	public boolean getBoolean(String name, boolean defaultValue) {
-
-		if (isSet(name)) {
-			return getBoolean(name);
-		} else {
-			return defaultValue;
-		}
-	}
-
-	public boolean getBoolean(int index) {
-
-		return get(index).toBoolean();
-	}
-
 	protected XDataNode throwNotApplicable(String methodName) {
-		throw new RuntimeError("Method not applicable here: %s.%s", this.getClass().getSimpleName(), methodName);
+
+		throw new RuntimeError("Method is not applicable here: %s.%s", this.getClass().getSimpleName(), methodName);
 	}
 
 	protected XDataNode throwNotSupported(String methodName) {
-		throw new RuntimeError("Method not supported: %s.%s", this.getClass().getSimpleName(), methodName);
+
+		throw new RuntimeError("Method is not supported: %s.%s", this.getClass().getSimpleName(), methodName);
 	}
 
 	private void serialize(XDataNode dataNode, Node target) {
@@ -482,10 +550,12 @@ public abstract class XDataNode extends XNode {
 	}
 
 	public void print() {
+
 		Log.print("%s=%s", this.name, this.toString());
 	}
 
 	public void printXML() {
+
 		Log.print(this.toXML());
 	}
 

@@ -3,11 +3,10 @@ package libj.dom;
 import java.util.ArrayList;
 import java.util.List;
 
+import commonj.sdo.DataObject;
 import libj.debug.Stack;
 import libj.error.RuntimeError;
 import libj.sdo.SDOUtils;
-
-import commonj.sdo.DataObject;
 
 public class XListNode extends XDataNode {
 
@@ -38,7 +37,7 @@ public class XListNode extends XDataNode {
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public XListNode clone() throws CloneNotSupportedException {
 
 		XListNode clone = (XListNode) super.clone();
@@ -75,6 +74,7 @@ public class XListNode extends XDataNode {
 	}
 
 	public int size() {
+
 		return list().size();
 	}
 

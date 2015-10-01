@@ -358,7 +358,7 @@ public class Text {
 		return str != null && str.length() > 0;
 	}
 
-	public static boolean isEqual(char what, char... args) {
+	public static boolean isEqualsAny(char what, char... args) {
 
 		for (char arg : args) {
 
@@ -370,7 +370,7 @@ public class Text {
 		return false;
 	}
 
-	public static boolean isEqual(String what, String... args) {
+	public static boolean isEqualsAny(String what, String... args) {
 
 		if (what != null) {
 

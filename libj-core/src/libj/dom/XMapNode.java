@@ -3,11 +3,10 @@ package libj.dom;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import commonj.sdo.DataObject;
 import libj.error.RuntimeError;
 import libj.sdo.SDOUtils;
 import spring.util.LinkedCaseInsensitiveMap;
-
-import commonj.sdo.DataObject;
 
 public class XMapNode extends XDataNode {
 
@@ -59,7 +58,7 @@ public class XMapNode extends XDataNode {
 	
 	public String nameOf(int index) {
 
-		if (index >= 0 && index < size()) {
+		if (0 <= index && index < size()) {
 
 			String[] keyArray = map().keySet().toArray(new String[0]);
 			return keyArray[index];

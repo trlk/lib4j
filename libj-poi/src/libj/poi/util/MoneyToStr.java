@@ -3,11 +3,11 @@ package libj.poi.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import libj.utils.Text;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import libj.utils.Text;
 
 /*
  * $Id$
@@ -118,13 +118,13 @@ public class MoneyToStr {
 
 		Currency currency;
 
-		if (Text.isEqual(currencyId, "UAH", "980")) {
+		if (Text.isEqualsAny(currencyId, "UAH", "980")) {
 			currency = Currency.UAH;
-		} else if (Text.isEqual(currencyId, "USD", "840")) {
+		} else if (Text.isEqualsAny(currencyId, "USD", "840")) {
 			currency = Currency.USD;
-		} else if (Text.isEqual(currencyId, "EUR", "978")) {
+		} else if (Text.isEqualsAny(currencyId, "EUR", "978")) {
 			currency = Currency.EUR;
-		} else if (Text.isEqual(currencyId, "RUB", "643")) {
+		} else if (Text.isEqualsAny(currencyId, "RUB", "643")) {
 			currency = Currency.RUB;
 		} else {
 			throw new IllegalArgumentException("Unsupported currency");

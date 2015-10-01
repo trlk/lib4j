@@ -1,19 +1,20 @@
 package libj.xml;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Time;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
 import libj.debug.Log;
 import libj.error.RuntimeError;
 import libj.utils.Cal;
 import libj.utils.Xml;
-
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-
 import spring.util.LinkedCaseInsensitiveMap;
 
 public class XMLSchema {
@@ -90,7 +91,8 @@ public class XMLSchema {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Object createObject(Class clazz, String value) throws Exception {
+	public static Object createObject(Class clazz, String value) throws InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
 		Object object = null;
 
@@ -110,7 +112,9 @@ public class XMLSchema {
 		return object;
 	}
 
-	public static Object createObject(String type, String value) throws Exception {
+	public static Object createObject(String type, String value) throws InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+
 		return createObject(getClass(type), value);
 	}
 
@@ -150,6 +154,41 @@ public class XMLSchema {
 		} else {
 			throw new RuntimeError("Invalid node type: %s (%s)", node.getNodeType(), node.toString());
 		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static Object createZeroObject(Class clazz) throws InstantiationException, IllegalAccessException {
+
+		if (clazz.equals(Integer.class)) {
+			return (int) 0;
+		} else if (clazz.equals(Short.class)) {
+			return (short) 0;
+		} else if (clazz.equals(Long.class)) {
+			return (long) 0;
+		} else if (clazz.equals(Float.class)) {
+			return (float) 0;
+		} else if (clazz.equals(Double.class)) {
+			return (double) 0;
+		} else if (clazz.equals(Byte.class)) {
+			return (byte) 0;
+		} else if (clazz.equals(BigDecimal.class)) {
+			return BigDecimal.valueOf(0);
+		} else if (clazz.equals(BigInteger.class)) {
+			return BigInteger.valueOf(0);
+		} else if (clazz.equals(Date.class)) {
+			return new Date(0);
+		} else if (clazz.equals(Time.class)) {
+			return new Time(0);
+		} else if (clazz.equals(Boolean.class)) {
+			throw new RuntimeError("Class %s does not have zero value", clazz.getName());
+		} else {
+			return clazz.newInstance();
+		}
+	}
+
+	public static Object createZeroObject(String type) throws InstantiationException, IllegalAccessException {
+
+		return createZeroObject(getClass(type));
 	}
 
 }

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.libj</groupId>
 		<artifactId>libj</artifactId>
-		<version>1.20</version>
+		<version>1.21</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<groupId>org.libj</groupId>
