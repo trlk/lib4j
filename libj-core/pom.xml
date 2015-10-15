@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.libj</groupId>
 		<artifactId>libj</artifactId>
-		<version>1.21</version>
+		<version>1.22</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<groupId>org.libj</groupId>
@@ -37,9 +37,15 @@
 			<resource>
 				<directory>${basedir}</directory>
 				<includes>
-					<include>**/*.properties</include>
+					<include>*.properties</include>
 				</includes>
 			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>			
 		</resources>
 	</build>
 </project>

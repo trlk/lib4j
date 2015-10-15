@@ -95,3 +95,4 @@ test/
 target/
 *.jar
 mvn-repo/
+.recommenders/

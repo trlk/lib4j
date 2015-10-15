@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.libj</groupId>
 		<artifactId>libj</artifactId>
-		<version>1.21</version>
+		<version>1.22</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<groupId>org.libj</groupId>
@@ -64,9 +64,15 @@
 			<resource>
 				<directory>${basedir}</directory>
 				<includes>
-					<include>**/*.properties</include>
+					<include>*.properties</include>
 				</includes>
 			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>			
 		</resources>
 	</build>
 </project>
