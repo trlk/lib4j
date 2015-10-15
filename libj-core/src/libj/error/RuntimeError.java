@@ -5,6 +5,11 @@ import libj.utils.Text;
 @SuppressWarnings("serial")
 public class RuntimeError extends RuntimeException {
 
+	protected RuntimeError() {
+
+		super();
+	}
+
 	public RuntimeError(Throwable e) {
 
 		super(e);

@@ -2,111 +2,194 @@ package libj.utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import libj.error.RuntimeError;
 
 public class Num {
 
-	private static final int DEFAULT_SCALE = 2;
+	public static Integer nvl(Integer... args) {
 
-	public static int nvl(Integer arg0, Integer arg1) {
+		for (Integer arg : args) {
 
-		if (arg0 != null) {
-			return arg0;
-		} else {
-			return arg1;
+			if (arg != null) {
+				return arg;
+			}
 		}
+
+		return null;
 	}
 
-	public static long nvl(Long arg0, Long arg1) {
+	public static Long nvl(Long... args) {
 
-		if (arg0 != null) {
-			return arg0;
-		} else {
-			return arg1;
+		for (Long arg : args) {
+
+			if (arg != null) {
+				return arg;
+			}
 		}
+
+		return null;
 	}
 
-	public static float nvl(Float arg0, Float arg1) {
+	public static Float nvl(Float... args) {
 
-		if (arg0 != null) {
-			return arg0;
-		} else {
-			return arg1;
+		for (Float arg : args) {
+
+			if (arg != null) {
+				return arg;
+			}
 		}
+
+		return null;
 	}
 
-	public static double nvl(Double arg0, Double arg1) {
+	public static Double nvl(Double... args) {
 
-		if (arg0 != null) {
-			return arg0;
-		} else {
-			return arg1;
+		for (Double arg : args) {
+
+			if (arg != null) {
+				return arg;
+			}
 		}
+
+		return null;
 	}
 
-	public static int min(int arg0, int arg1) {
+	public static Integer min(Integer... args) {
 
-		if (arg0 < arg1)
-			return arg0;
-		else
-			return arg1;
+		Integer minValue = null;
+
+		for (Integer arg : args) {
+
+			if (arg != null) {
+
+				if (minValue == null || arg < minValue) {
+					minValue = arg;
+				}
+			}
+		}
+
+		return minValue;
 	}
 
-	public static long min(long arg0, long arg1) {
+	public static Long min(Long... args) {
 
-		if (arg0 < arg1)
-			return arg0;
-		else
-			return arg1;
+		Long minValue = null;
+
+		for (Long arg : args) {
+
+			if (arg != null) {
+
+				if (minValue == null || arg < minValue) {
+					minValue = arg;
+				}
+			}
+		}
+
+		return minValue;
 	}
 
-	public static float min(float arg0, float arg1) {
+	public static Float min(Float... args) {
 
-		if (arg0 < arg1)
-			return arg0;
-		else
-			return arg1;
+		Float minValue = null;
+
+		for (Float arg : args) {
+
+			if (arg != null) {
+
+				if (minValue == null || arg < minValue) {
+					minValue = arg;
+				}
+			}
+		}
+
+		return minValue;
 	}
 
-	public static double min(double arg0, double arg1) {
+	public static Double min(Double... args) {
 
-		if (arg0 < arg1)
-			return arg0;
-		else
-			return arg1;
+		Double minValue = null;
+
+		for (Double arg : args) {
+
+			if (arg != null) {
+
+				if (minValue == null || arg < minValue) {
+					minValue = arg;
+				}
+			}
+		}
+
+		return minValue;
 	}
 
-	public static int max(int arg0, int arg1) {
+	public static Integer max(Integer... args) {
 
-		if (arg0 > arg1)
-			return arg0;
-		else
-			return arg1;
+		Integer maxValue = null;
+
+		for (Integer arg : args) {
+
+			if (arg != null) {
+
+				if (maxValue == null || arg > maxValue) {
+					maxValue = arg;
+				}
+			}
+		}
+
+		return maxValue;
 	}
 
-	public static long max(long arg0, long arg1) {
+	public static Long max(Long... args) {
 
-		if (arg0 > arg1)
-			return arg0;
-		else
-			return arg1;
+		Long maxValue = null;
+
+		for (Long arg : args) {
+
+			if (arg != null) {
+
+				if (maxValue == null || arg > maxValue) {
+					maxValue = arg;
+				}
+			}
+		}
+
+		return maxValue;
 	}
 
-	public static float max(float arg0, float arg1) {
+	public static Float max(Float... args) {
 
-		if (arg0 > arg1)
-			return arg0;
-		else
-			return arg1;
+		Float maxValue = null;
+
+		for (Float arg : args) {
+
+			if (arg != null) {
+
+				if (maxValue == null || arg > maxValue) {
+					maxValue = arg;
+				}
+			}
+		}
+
+		return maxValue;
 	}
 
-	public static double max(double arg0, double arg1) {
+	public static Double max(Double... args) {
 
-		if (arg0 > arg1)
-			return arg0;
-		else
-			return arg1;
+		Double maxValue = null;
+
+		for (Double arg : args) {
+
+			if (arg != null) {
+
+				if (maxValue == null || arg > maxValue) {
+					maxValue = arg;
+				}
+			}
+		}
+
+		return maxValue;
 	}
 
 	public static int div(int arg0, int arg1) {
@@ -129,14 +212,139 @@ public class Num {
 		return arg0 % arg1;
 	}
 
-	public static int toInt(String value) {
+	public static float round(float value) {
 
-		return Integer.parseInt(value);
+		return round(value, 0);
 	}
 
-	public static long toLong(String value) {
+	public static float round(float value, int scale) {
 
-		return Long.parseLong(value);
+		if (scale < 0) {
+			throw new IllegalArgumentException();
+		}
+
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(scale, RoundingMode.HALF_UP);
+
+		return bd.floatValue();
+	}
+
+	public static double round(double value) {
+
+		return round(value, 0);
+	}
+
+	public static double round(double value, int scale) {
+
+		if (scale < 0) {
+			throw new IllegalArgumentException();
+		}
+
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(scale, RoundingMode.HALF_UP);
+
+		return bd.doubleValue();
+	}
+
+	public static int toInt(String value) {
+
+		try {
+
+			return Integer.parseInt(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable integer: %s", value);
+		}
+	}
+
+	public static boolean isEqualsAny(Integer value, Integer... args) {
+
+		if (value != null) {
+
+			for (Integer arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqualsAny(Long value, Long... args) {
+
+		if (value != null) {
+
+			for (Long arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqualsAny(Float value, Float... args) {
+
+		if (value != null) {
+
+			for (Float arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqualsAny(Double value, Double... args) {
+
+		if (value != null) {
+
+			for (Double arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqualsAny(BigInteger value, BigInteger... args) {
+
+		if (value != null) {
+
+			for (BigInteger arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEqualsAny(BigDecimal value, BigDecimal... args) {
+
+		if (value != null) {
+
+			for (BigDecimal arg : args) {
+
+				if (value.equals(arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public static Integer toInteger(String value) {
@@ -146,6 +354,48 @@ public class Num {
 		}
 
 		return toInt(value);
+	}
+
+	public static Integer toInteger(Float value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		return Math.round(value);
+	}
+
+	public static Long toLong(String value) {
+
+		if (Text.isEmpty(value)) {
+			return null;
+		}
+
+		try {
+
+			return Long.parseLong(value);
+
+		} catch (Exception e) {
+			throw new RuntimeError("Unparseable long: %s", value);
+		}
+	}
+
+	public static Long toLong(Float value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		return (long) Math.round(value);
+	}
+
+	public static Long toLong(Double value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		return Math.round(value);
 	}
 
 	public static Float toFloat(String value) {
@@ -170,6 +420,7 @@ public class Num {
 		}
 
 		try {
+
 			return new Float(value);
 
 		} catch (Exception e) {
@@ -193,6 +444,7 @@ public class Num {
 		}
 
 		try {
+
 			return new Double(value);
 
 		} catch (Exception e) {
@@ -231,6 +483,7 @@ public class Num {
 		}
 
 		try {
+
 			return new BigInteger(value);
 
 		} catch (Exception e) {
@@ -263,22 +516,12 @@ public class Num {
 		}
 
 		try {
+
 			return new BigDecimal(value);
 
 		} catch (Exception e) {
 			throw new RuntimeError("Unparseable BigDecimal: %s", value);
 		}
-	}
-
-	public static BigDecimal toBigDecimal(Float value, int scale) {
-
-		if (value == null) {
-			return null;
-		}
-
-		BigDecimal bdValue = new BigDecimal(value);
-
-		return bdValue.setScale(scale, BigDecimal.ROUND_HALF_UP);
 	}
 
 	public static BigDecimal toBigDecimal(Float value) {
@@ -287,18 +530,18 @@ public class Num {
 			return null;
 		}
 
-		return toBigDecimal(value, DEFAULT_SCALE);
+		return new BigDecimal(value);
 	}
 
-	public static BigDecimal toBigDecimal(Double value, int scale) {
+	public static BigDecimal toBigDecimal(Float value, int scale) {
 
 		if (value == null) {
 			return null;
 		}
 
-		BigDecimal bdAmount = new BigDecimal(value);
+		BigDecimal bd = new BigDecimal(value);
 
-		return bdAmount.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		return bd.setScale(scale, RoundingMode.HALF_UP);
 	}
 
 	public static BigDecimal toBigDecimal(Double value) {
@@ -307,7 +550,18 @@ public class Num {
 			return null;
 		}
 
-		return toBigDecimal(value, DEFAULT_SCALE);
+		return new BigDecimal(value);
+	}
+
+	public static BigDecimal toBigDecimal(Double value, int scale) {
+
+		if (value == null) {
+			return null;
+		}
+
+		BigDecimal bd = new BigDecimal(value);
+
+		return bd.setScale(scale, RoundingMode.HALF_UP);
 	}
 
 	public static String toString(float value) {
@@ -359,7 +613,16 @@ public class Num {
 
 		String format = Text.sprintf("%%.%df", scale);
 
-		return Text.sprintf(format, value);
+		return Text.format(format, value);
+	}
+
+	public static String toString(BigDecimal value, int scale) {
+
+		if (value == null) {
+			return Text.EMPTY_STRING;
+		}
+
+		return value.setScale(scale, RoundingMode.HALF_UP).toString();
 	}
 
 }

@@ -605,10 +605,16 @@ public class Xml {
 
 	public static boolean isSet(Node parent, String xpath) {
 
-		Node textNode = extractNode(parent, xpath);
+		if (isHas(parent, xpath)) {
 
-		if (textNode != null) {
-			return Text.isNotEmpty(textNode.getTextContent());
+			Node textNode = extractNode(parent, xpath);
+
+			if (textNode != null) {
+				return Text.isNotEmpty(textNode.getTextContent());
+			} else {
+				return false;
+			}
+
 		} else {
 			return false;
 		}
@@ -898,17 +904,13 @@ public class Xml {
 				return Cal.formatDate(d, Cal.DEFAULT_DATETIME_FORMAT);
 			}
 
-		} else if (value instanceof Float) {
+		} else if (value instanceof Float || value instanceof Double) {
 
-			return String.format("%.2f", (Float) value);
-
-		} else if (value instanceof Double) {
-
-			return String.format("%.2d", (Double) value);
+			return String.format("%.2f", value);
 
 		} else if (value instanceof BigDecimal) {
 
-			return String.format("%.2d", Num.toDouble((BigDecimal) value));
+			return getPrintedText(Num.toDouble((BigDecimal) value));
 
 		} else {
 

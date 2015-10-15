@@ -121,7 +121,7 @@ public class Cal {
 		}
 	}
 
-	public static boolean isEqual(Date d0, Date d1) {
+	public static boolean isEquals(Date d0, Date d1) {
 
 		if (d0 == null || d1 == null) {
 			return false;
@@ -130,9 +130,29 @@ public class Cal {
 		return diff(d0, d1) == 0;
 	}
 
+	public static boolean isEqualsAny(Date date, Date... args) {
+
+		if (date != null) {
+
+			for (Date arg : args) {
+
+				if (isEquals(date, arg)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isBetween(Date d, Date dateFrom, Date dateTo) {
+
+		return diff(dateFrom, d) <= 0 && diff(d, dateTo) <= 0;
+	}
+
 	public static boolean isTruncated(Date d) {
 
-		return isEqual(d, trunc(d));
+		return isEquals(d, trunc(d));
 	}
 
 	// дата JAVA->GC
