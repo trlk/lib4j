@@ -22,6 +22,7 @@ import libj.debug.Log;
 import libj.debug.Trace;
 import libj.error.RuntimeError;
 import libj.jdbc.NamedStatement;
+import libj.utils.Num;
 import libj.utils.Text;
 
 public class Oracle extends Database {
@@ -29,7 +30,9 @@ public class Oracle extends Database {
 	// SQL codes
 	public static final Integer ORA_SUCCESS = 0;
 	public static final Integer ORA_TIMEOUT = 1013;
-	public static final Integer ORA_DISCARDED = 4068;
+	public static final Integer ORA_DISCARDED = 4068; // Existing state of packages has been discarded
+	public static final Integer ORA_UNIT_NOT_FOUND = 6508; // PL/SQL: could not find program unit being called
+
 	public static final Integer ORA_USER_ERROR = 20000;
 	public static final Integer ORA_USER_TIMEOUT = 20999;
 
@@ -47,6 +50,7 @@ public class Oracle extends Database {
 
 	// формат даты/времени по-умолчанию
 	private String dateFormat = "dd.mm.yyyy";
+
 	@SuppressWarnings("unused")
 	private String timeFormat = "hh24:mm:ss";
 
@@ -276,8 +280,6 @@ public class Oracle extends Database {
 	// execute statement
 	public void execute(PreparedStatement q) throws SQLException {
 
-		Trace.point(q.toString());
-
 		try {
 
 			q.setQueryTimeout(this.timeout);
@@ -291,8 +293,6 @@ public class Oracle extends Database {
 
 	// execute statement
 	public void execute(NamedStatement q) throws SQLException {
-
-		Trace.point(q.getQuery().toString());
 
 		try {
 
@@ -318,16 +318,14 @@ public class Oracle extends Database {
 	// forced execute
 	public void enforce(PreparedStatement q) throws SQLException {
 
-		Trace.point(q.toString());
-
 		try {
 
 			q.setQueryTimeout(this.timeout);
 			q.execute();
 
 		} catch (SQLException e) {
-
-			if (e.getErrorCode() == ORA_DISCARDED) {
+						
+			if (Num.isEqualsAny(e.getErrorCode(), ORA_DISCARDED, ORA_UNIT_NOT_FOUND)) {
 
 				Log.error(e.getMessage());
 				Log.error("Last query will be retried...");
@@ -343,8 +341,6 @@ public class Oracle extends Database {
 
 	// forced execute
 	public void enforce(NamedStatement q) throws SQLException {
-
-		Trace.point(q.getQuery());
 
 		try {
 
@@ -369,8 +365,6 @@ public class Oracle extends Database {
 
 	// alter session
 	public void alterSession(Connection connection, String param, String value) throws SQLException {
-
-		Trace.point(param, value);
 
 		Statement sql = connection.createStatement();
 		sql.execute(Text.sprintf("alter session set %s='%s'", param, value));
@@ -472,8 +466,6 @@ public class Oracle extends Database {
 
 	// executeQuery
 	public ResultSet executeQuery(PreparedStatement q) throws SQLException {
-
-		Trace.point(q);
 
 		try {
 
