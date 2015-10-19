@@ -1,5 +1,8 @@
 # LibJ Java Library #
 
+General purpose Java library
+
+
 ### Author ###
 
 Taras Lyuklyanchuk
