@@ -1,4 +1,4 @@
-# LibJ Java Library #
+# Lib4J Java Library #
 
 General purpose Java library
 
