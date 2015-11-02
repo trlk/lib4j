@@ -5,5 +5,4 @@ General purpose Java library
 
 ### Author ###
 
-Taras Lyuklyanchuk
-http://linkedin.com/in/TarasLyuklyanchuk
+[Taras Lyuklyanchuk](http://linkedin.com/in/TarasLyuklyanchuk)
