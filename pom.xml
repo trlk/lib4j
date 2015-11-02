@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<name>libj</name>	
-	<groupId>org.libj</groupId>
-	<artifactId>libj</artifactId>
-	<version>1.22</version>
+	<name>lib4j</name>	
+	<groupId>org.rtfm</groupId>
+	<artifactId>lib4j</artifactId>
+	<version>2.00</version>
 	<packaging>pom</packaging>
-	<description>LibJ General Use Java Library</description>
-	<url>https://bitbucket.org/rtfm/libj</url>
+	<description>Lib4j General Purpose Java Library</description>
+	<url>https://bitbucket.org/rtfm/lib4j</url>
 	<developers>
 		<developer>
 			<id>taras</id>
@@ -16,9 +16,9 @@
 		</developer>
 	</developers>
 	<modules>
-		<module>libj-core</module>
-		<module>libj-bpm</module>
-		<module>libj-poi</module>
+		<module>lib4j-core</module>
+		<module>lib4j-bpm</module>
+		<module>lib4j-poi</module>
 	</modules>
 	<properties>
 		<main.basedir>${user.dir}</main.basedir>
